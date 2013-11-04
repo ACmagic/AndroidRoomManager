@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:arm="http://schemas.android.com/apk/res/edu.cmu.sv.arm" >
+
+    <PreferenceCategory android:title="@string/room_preferences" >
+        <ListPreference
+            android:key="roomNumberPref"
+            android:summary="@string/set_default_room_number"
+            android:title="@string/default_room_number" />
+        <edu.cmu.sv.arm.SeekBarPreference
+            android:defaultValue="2"
+            arm:minimumValue="2"
+            arm:maximumValue="10"
+            arm:stepSize="1"
+            arm:units="cameras"
+            android:key="maximumNumberOfCamerasPerRoom"
+            android:summary="@string/set_maximum_number_of_cameras_per_room"
+            android:title="@string/maximum_number_of_cameras_per_room"
+            />
+        <edu.cmu.sv.arm.SeekBarPreference
+            android:defaultValue="1000"
+            arm:minimumValue="250"
+            arm:maximumValue="60000"
+            arm:stepSize="250"
+            arm:units="milliseconds"
+            android:key="cameraRefreshDelay"
+            android:summary="@string/set_camera_refresh_delay"
+            android:title="@string/camera_refresh_delay"
+            />
+        <edu.cmu.sv.arm.SeekBarPreference
+            android:defaultValue="5"
+            arm:minimumValue="2"
+            arm:maximumValue="60"
+            arm:stepSize="1"
+            arm:units="minutes"
+            android:key="calendarRefreshDelay"
+            android:summary="@string/set_calendar_refresh_delay"
+            android:title="@string/calendar_refresh_delay"
+            />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/application_preferences" >
+        <edu.cmu.sv.arm.SeekBarPreference
+            android:defaultValue="5"
+            arm:minimumValue="2"
+            arm:maximumValue="60"
+            arm:stepSize="1"
+            arm:units="minutes"
+            android:key="applicationTimeout"
+            android:summary="@string/set_application_timeout"
+            android:title="@string/application_timeout"
+            />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/api_preferences" >
+        <EditTextPreference
+            android:defaultValue="AIzaSyD8q4DB7NPcxBCEstCOowsazOZtQ5uzty8"
+            android:key="googleCalendarAPIKey"
+            android:summary="@string/enter_google_calendar_api_key"
+            android:title="@string/google_calendar_api_key" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

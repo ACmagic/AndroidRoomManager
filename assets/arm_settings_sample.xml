@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Create /ARM/arm_settings.xml file on device's storage and use the format below for the settings -->
+<!-- Rooms are not required to have images, but all other options are required -->
+<settings>
+    <application
+        title="Android Room Manager"
+        google_account="account_email@address.com" 
+        google_calendar_api_key="abcdefg000GoogleAPIKey000hijklmnop"
+        timeout_minutes="4"
+        timeout_seconds="30"
+        calendar_refresh_delay_minutes="1"
+        calendar_refresh_delay_seconds="30" />
+    <building number="1">
+        <room number="100" 
+          resource_address="google_resource_address_100@resource.calendar.google.com">
+            <image url="http://url_to_image.com/image.jpg"
+                 refresh_delay_minutes="0"
+                 refresh_delay_seconds="0"
+                 refresh_delay_milliseconds="500" />
+            <image url="http://url_to_image.com/image2.jpg"
+                 refresh_delay_minutes="0"
+                 refresh_delay_seconds="0"
+                 refresh_delay_milliseconds="500"/>
+        </room>
+        <room number="200" 
+          resource_address="google_resource_address_200@resource.calendar.google.com">
+            <image url="http://url_to_image.com/image3.jpg"
+                 refresh_delay_minutes="0"
+                 refresh_delay_seconds="0"
+                 refresh_delay_milliseconds="500" />
+            <image url="http://url_to_image.com/image4.jpg"
+                 refresh_delay_minutes="0"
+                 refresh_delay_seconds="0"
+                 refresh_delay_milliseconds="500"/>
+        </room>
+    </building>
+    <building number="2">
+        <room number="100" 
+          resource_address="google_resource_address_100@resource.calendar.google.com">
+        </room>
+        <room number="200" 
+          resource_address="google_resource_address_200@resource.calendar.google.com">
+        </room>
+    </building>
+</settings>

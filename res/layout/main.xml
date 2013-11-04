@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="horizontal"
+    android:keepScreenOn="true" >
+
+    <LinearLayout
+        android:id="@+id/calendarContainerLinearLayout"
+        android:layout_width="880dp"
+        android:layout_height="fill_parent"
+        android:padding="0dp" >
+
+        <fragment
+            android:id="@+id/calendarFragment"
+            android:name="edu.cmu.sv.arm.CalendarFragment"
+            android:layout_width="880dp"
+            android:layout_height="fill_parent"
+            android:padding="0dp" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="400dp"
+        android:layout_height="wrap_content"
+        android:paddingBottom="0dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="10dp"
+        android:paddingTop="0dp" >
+
+        <CalendarView
+            android:id="@+id/calendarView"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginTop="26.5dp" />
+
+        <DigitalClock
+            android:id="@+id/digitalClock1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="36.5dp"
+            android:textColor="@android:color/black"
+            android:textSize="18dp" />
+
+        <fragment
+            android:id="@+id/cameraFragment"
+            android:name="edu.cmu.sv.arm.CameraFragment"
+            android:layout_width="fill_parent"
+            android:layout_height="200dp"
+            android:layout_above="@+id/buttonsLinearLayout"
+            android:layout_below="@+id/calendarView"
+            android:layout_marginBottom="5dp" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_above="@+id/buttonsLinearLayout"
+            android:background="#dbdbdb" />
+
+        <LinearLayout
+            android:id="@+id/buttonsLinearLayout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="4dp"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/reserveRoomButton"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="112dp"
+                android:layout_weight="1"
+                android:text="@string/reserve_room" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="fill_parent"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="8dp"
+                android:background="@color/dividing_gray" />
+
+            <Button
+                android:id="@+id/quickReservationButton"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="112dp"
+                android:layout_weight="1"
+                android:text="@string/quick_reservation" />
+        </LinearLayout>
+    </RelativeLayout>
+
+</LinearLayout>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<settings>
+    <application
+        title="Android Room Manager"
+        google_account="invalid_account_email@invalid_email_address.com" 
+        google_calendar_api_key="none"
+        timeout_minutes="4"
+        timeout_seconds="30"
+        calendar_refresh_delay_minutes="1"
+        calendar_refresh_delay_seconds="30" />
+    <building number="1">
+        <room number="100"
+          resource_address="google_resource_address_100@resource.calendar.google.com">
+        </room>
+    </building>
+</settings>

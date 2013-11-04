@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/reserveRoomButton"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/reserve_room"
+        android:icon="@drawable/icon_ok" />
+    <item
+        android:id="@+id/cancelButton"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/cancel"
+        android:icon="@drawable/icon_cancel" />
+
+</menu>

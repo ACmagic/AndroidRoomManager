@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/selector">
+    
+    <TextView android:id="@+id/emailTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="anon@west.cmu.edu"
+        android:textSize="18dp"
+        android:textColor="@android:color/black" />
+
+    <TextView android:id="@+id/touchToRemoveTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/touch_to_remove" />
+    
+    <View
+        android:id="@+id/horizontalBar"
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:background="@color/dividing_gray" />
+</LinearLayout>

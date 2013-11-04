@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ARM</string>
+    <string name="app_name_extended">Android Room Manager</string>
+    
+    <string name="preferences_label">Preferences</string>
+    <string name="room_preferences">Room Preferences</string>
+    <string name="default_room_number">Default Room Number</string>
+    <string name="set_default_room_number">Select default room for which the application will be used</string>
+    <string name="maximum_number_of_cameras_per_room">Maximum Number of Cameras per Room</string>
+    <string name="set_maximum_number_of_cameras_per_room">Set maximum number of cameras queried per room</string>
+    <string name="camera_refresh_delay">Camera Refresh Delay</string>
+    <string name="set_camera_refresh_delay">Set how often the displayed camera image will refresh</string>
+    <string name="calendar_refresh_delay">Calendar Refresh Delay</string>
+    <string name="set_calendar_refresh_delay">Set how often the calendar will refresh displayed events</string>
+    
+    <string name="application_preferences">Application Preferences</string>
+    <string name="application_timeout">Application Timeout</string>
+    <string name="set_application_timeout">Set how long the application will idle before resetting to the default room and current date and time</string>
+    
+    <string name="units">unit(s)</string>
+    
+    <string name="api_preferences">API Preferences</string>
+    <string name="google_calendar_api_key">Google Calendar API Key</string>
+    <string name="enter_google_calendar_api_key">Enter the Google Calendar API key associated with the room manager account</string>
+    
+    <string name="reserve_room_label">Reserve Room</string>
+    <string name="quick_reservation_label">Quick Reservation</string>
+    
+    <string name="today">Today</string>
+    <string name="select_room">Select Room</string>
+    <string name="help">Help</string>
+    <string name="reset">Reset</string>
+    <string name="preferences">Preferences</string>
+    
+    <string name="close">Close</string>
+    
+    <string name="reserve_room">Reserve Room</string>
+    <string name="quick_reservation">Quick Reservation</string>
+    
+    <string name="camera_image">Camera Image</string>
+    <string name="no_cameras">This room has no accessible cameras.</string>
+    
+    <string name="calendar">Calendar</string>
+    <string name="jan">Jan</string>
+    <string name="feb">Feb</string>
+    <string name="mar">Mar</string>
+    <string name="apr">Apr</string>
+    <string name="may">May</string>
+    <string name="jun">Jun</string>
+    <string name="jul">Jul</string>
+    <string name="aug">Aug</string>
+    <string name="sep">Sep</string>
+    <string name="oct">Oct</string>
+    <string name="nov">Nov</string>
+    <string name="dec">Dec</string>
+    <string name="sunday">Sunday</string>
+    <string name="monday">Monday</string>
+    <string name="tuesday">Tuesday</string>
+    <string name="wednesday">Wednesday</string>
+    <string name="thursday">Thursday</string>
+    <string name="friday">Friday</string>
+    <string name="saturday">Saturday</string>
+    <string name="sun">Sun</string>
+    <string name="mon">Mon</string>
+    <string name="tue">Tue</string>
+    <string name="wed">Wed</string>
+    <string name="thu">Thu</string>
+    <string name="fri">Fri</string>
+    <string name="sat">Sat</string>
+    <string name="time12am">12 am</string>
+    <string name="time1am">1 am</string>
+    <string name="time2am">2 am</string>
+    <string name="time3am">3 am</string>
+    <string name="time4am">4 am</string>
+    <string name="time5am">5 am</string>
+    <string name="time6am">6 am</string>
+    <string name="time7am">7 am</string>
+    <string name="time8am">8 am</string>
+    <string name="time9am">9 am</string>
+    <string name="time10am">10 am</string>
+    <string name="time11am">11 am</string>
+    <string name="time12pm">12 pm</string>
+    <string name="time1pm">1 pm</string>
+    <string name="time2pm">2 pm</string>
+    <string name="time3pm">3 pm</string>
+    <string name="time4pm">4 pm</string>
+    <string name="time5pm">5 pm</string>
+    <string name="time6pm">6 pm</string>
+    <string name="time7pm">7 pm</string>
+    <string name="time8pm">8 pm</string>
+    <string name="time9pm">9 pm</string>
+    <string name="time10pm">10 pm</string>
+    <string name="time11pm">11 pm</string>
+    
+    <string name="am">am</string>
+    <string name="pm">pm</string>
+    <string name="no_time">No Time</string>
+    <string name="busy">Busy</string>
+    <string name="preferences_authentication">Preferences Authentication</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="password">Password:</string>
+    <string name="error">Error</string>
+    <string name="incorrect_password">The password you have entered is incorrect.</string>
+    <string name="no_password">You have not entered a password.</string>
+    <string name="change_preferences_password">Change preferences authentication password?</string>
+    <string name="new_password">New password:</string>
+    <string name="confirm_new_password">Confirm new password:</string>
+    <string name="passwords_do_not_match">The new and confirmed passwords do not match.</string>
+    <string name="no_new_password">You have not entered a new password.</string>
+    <string name="your_email_label">Your e-mail</string>
+    <string name="no_host_email_hint">No host e-mail (required)</string>
+    <string name="invite_guest_label">Invite guest</string>
+    <string name="guests_label">Guests</string>
+    <string name="plus_sign">+</string>
+    <string name="bracketed_plus_sign">[+]</string>
+    <string name="guest_email_hint">Guest e-mail</string>
+    <string name="minus_sign">-</string>
+    <string name="untitled_event_hint">Untitled event (required, at least four characters)</string>
+    <string name="to">to</string>
+    <string name="description_label">Description</string>
+    <string name="location_label">Location</string>
+    <string name="no_description_hint">No description</string>
+    <string name="no_available_rooms">There are no available rooms for the period.</string>
+    
+    <string name="set_starting_date">Set Starting Date</string>
+    <string name="set_starting_time">Set Starting Time</string>
+    <string name="set_ending_date">Set Ending Date</string>
+    <string name="set_ending_time">Set Ending Time</string>
+    
+    <string name="touch_to_remove">Touch to remove</string>
+    <string name="already_a_guest">This e-mail has already been added to the guest list.</string>
+    <string name="not_a_valid_email">Please enter a valid guest e-mail address.</string>
+    <string name="obtaining_available_rooms_please_wait">Obtaining available rooms. Please wait…</string>
+    <string name="event_title_error">Event title must be at least four characters long.</string>
+    <string name="room_selection_error">A room must be selected.</string>
+    <string name="host_email_error">Your valid e-mail address is required.</string>
+    <string name="reserving_room_please_wait">Reserving room. Please wait…</string>
+    <string name="there_has_been_an_exception">There has been an exception: </string>
+    <string name="validating_reservation">Validating reservation. Please wait…</string>
+    <string name="notice">Notice</string>
+    <string name="room_reserved">The room has been reserved.</string>
+    <string name="unable_to_verify_reservation">Unable to verify reservation. Please verify elsewhere.</string>
+    <string name="reservation_failed">The reservation has failed. Please try again.</string>
+    <string name="reserved_via_arm">Reserved via Android Room Manager.</string>
+    <string name="close_help">Close Help</string>
+    <string name="updating">Updating...</string>
+</resources>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/todayButton"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/today"
+        android:icon="@drawable/icon_today" />
+    <item
+        android:id="@+id/resetButton"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/reset"
+        android:icon="@drawable/icon_reset" />
+<!-- 
+    <item
+        android:id="@+id/preferencesButton"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/preferences"
+        android:icon="@drawable/icon_preferences" />
+ -->
+</menu>

@@ -144,7 +144,7 @@ public class AndroidRoomManagerMainActivity extends Activity {
 	    	// Intentionally left blank
 	    case R.id.resetButton:
 	    	updateRoomNumber();
-	    	resetCameraFragment(true);
+	    	//resetCameraFragment(true);
 	    	return true;
 	    default:
 	        return super.onOptionsItemSelected(item);
@@ -375,7 +375,7 @@ public class AndroidRoomManagerMainActivity extends Activity {
 				
 				updateContacts();
 				
-				resetCameraFragment(true);
+				//resetCameraFragment(true);
 		    	
 				setupApplicationResetter();
 			}
@@ -468,10 +468,10 @@ public class AndroidRoomManagerMainActivity extends Activity {
     
     // Runs when the preferences have changed
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		if (key.equals("maximumNumberOfCamerasPerRoom") || key.equals("cameraRefreshDelay")) {
-			resetCameraFragment(false);
-		}
-		else if (key.equals("roomNumberPref")) {
+//		if (key.equals("maximumNumberOfCamerasPerRoom") || key.equals("cameraRefreshDelay")) {
+//			resetCameraFragment(false);
+//		}
+		if (key.equals("roomNumberPref")) {
 			updateRoomNumber();
 		}
 	}
@@ -508,7 +508,7 @@ public class AndroidRoomManagerMainActivity extends Activity {
 			public boolean onNavigationItemSelected(int itemPosition, long itemId) {				
 				mAppState.setCurrentRoom(mAppState.getNumberAddressedRooms().get(mAppState.getRooms().get(itemPosition)));
 				
-				resetCameraFragment(true);
+				//resetCameraFragment(true);
 				
 				restartCalendarFragmentEventsUpdater();
 				
@@ -530,7 +530,7 @@ public class AndroidRoomManagerMainActivity extends Activity {
 		});
     }
     
-    // Resets the camera fragment
+    //Resets the camera fragment
     public void resetCameraFragment(boolean resetCamera) {
 		CameraFragment cameraFragment = (CameraFragment) getFragmentManager().findFragmentById(R.id.cameraFragment);
 		cameraFragment.reset(resetCamera);
@@ -585,10 +585,6 @@ public class AndroidRoomManagerMainActivity extends Activity {
 	    		break;
 	    	}
 	    }
-	    
-	    /*if (accounts.length >= 1) {
-	    	roomManagerAccount = accounts[0];
-	    }*/
 	    
 	    if (roomManagerAccount == null) {
 	    	// TODO What if appropriate account does not exist?

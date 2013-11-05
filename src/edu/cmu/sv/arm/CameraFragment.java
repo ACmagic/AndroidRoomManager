@@ -15,13 +15,13 @@ import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
+//import android.widget.ImageView;
 import android.widget.TextView;
 
 public class CameraFragment extends Fragment {
 	private ARM mAppState;
 	
-	private ImageView mCameraImageView;
+	//private ImageView mCameraImageView;
 	private TextView mNoCamerasTextView;
 	
 	private Vector<String> mCameraURLs;
@@ -38,43 +38,43 @@ public class CameraFragment extends Fragment {
 		
 		mAppState = ((ARM) getActivity().getApplication());
 
-		mCameraImageView = (ImageView) cameraView.findViewById(R.id.cameraImageView);
+		//mCameraImageView = (ImageView) cameraView.findViewById(R.id.cameraImageView);
 		mNoCamerasTextView = (TextView) cameraView.findViewById(R.id.noCamerasTextView);
 		
-		mCameraURLs = new Vector<String>();
+		//mCameraURLs = new Vector<String>();
 		
-		updateCameraURLs();
-		mOnCamera = 0;
+		//updateCameraURLs();
+//		mOnCamera = 0;
 		
-		mCameraImageView.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				cycleCamera();
-		    }
-		});
+//		mCameraImageView.setOnClickListener(new View.OnClickListener() {
+//			public void onClick(View v) {
+//				cycleCamera();
+//		    }
+//		});
 
-		mUpdateHandler = new Handler();
-
-		mUpdater = new Runnable() {
-			public void run() {
-				if (mCurrentGetBitmap != null) {
-					mCurrentGetBitmap.cancel(true);
-					mCurrentGetBitmap = null;
-				}
-				mCurrentGetBitmap = new CameraBitmapTask();
-
-				try {
-					mCurrentGetBitmap.execute();
-				} catch (Exception e) {
-					// OK to do nothing here (there simply will not be an update)
-				}
-				
-				if (mAppState.getCurrentRoom().getImages().size() > mOnCamera) {
-					RoomImage ri = mAppState.getCurrentRoom().getImages().get(mOnCamera);
-					mUpdateHandler.postDelayed(mUpdater, ri.getRefreshDelayMilliseconds() + ri.getRefreshDelaySeconds() * DateTimeHelpers.SECOND_IN_MILLISECONDS + ri.getRefreshDelayMinutes() * DateTimeHelpers.MINUTE_IN_MILLISECONDS);
-				}
-			}
-		};
-		
+//		mUpdateHandler = new Handler();
+//
+//		mUpdater = new Runnable() {
+//			public void run() {
+//				if (mCurrentGetBitmap != null) {
+//					mCurrentGetBitmap.cancel(true);
+//					mCurrentGetBitmap = null;
+//				}
+//				mCurrentGetBitmap = new CameraBitmapTask();
+//
+//				try {
+//					mCurrentGetBitmap.execute();
+//				} catch (Exception e) {
+//					// OK to do nothing here (there simply will not be an update)
+//				}
+//				
+//				if (mAppState.getCurrentRoom().getImages().size() > mOnCamera) {
+//					RoomImage ri = mAppState.getCurrentRoom().getImages().get(mOnCamera);
+//					mUpdateHandler.postDelayed(mUpdater, ri.getRefreshDelayMilliseconds() + ri.getRefreshDelaySeconds() * DateTimeHelpers.SECOND_IN_MILLISECONDS + ri.getRefreshDelayMinutes() * DateTimeHelpers.MINUTE_IN_MILLISECONDS);
+//				}
+//			}
+//		};
+//		
 		updateCameraDisplayArea();
 
 		return cameraView;
@@ -84,14 +84,14 @@ public class CameraFragment extends Fragment {
 	public void onResume() {
 		super.onResume();
 		
-		startUpdater();
+		//startUpdater();
 	}
 	
 	@Override
 	public void onPause() {
 		super.onPause();
 		
-		stopUpdater();
+		//stopUpdater();
 		
 		if (mCurrentGetBitmap != null) {
 			mCurrentGetBitmap.cancel(true);
@@ -148,17 +148,18 @@ public class CameraFragment extends Fragment {
 	
 	// Used for updating the camera display area (if there are no cameras, will display a message that states so and stop the camera updater; otherwise, hide the message and start the updater)
 	private void updateCameraDisplayArea() {
-		if (mAppState.getCurrentRoom().getImages().size() == 0) {
-			stopUpdater();
-			
-			mCameraImageView.setVisibility(android.view.View.GONE);
-			mNoCamerasTextView.setVisibility(android.view.View.VISIBLE);
-		}
-		else {
-			restartUpdater();
-			
-			mNoCamerasTextView.setVisibility(android.view.View.GONE);
-		}
+//		if (mAppState.getCurrentRoom().getImages().size() == 0) {
+//			stopUpdater();
+//			
+//			//mCameraImageView.setVisibility(android.view.View.GONE);
+//			mNoCamerasTextView.setVisibility(android.view.View.VISIBLE);
+//		}
+//		else {
+//			restartUpdater();
+//			
+//			mNoCamerasTextView.setVisibility(android.view.View.GONE);
+//		}
+		mNoCamerasTextView.setVisibility(android.view.View.VISIBLE);
 	}
 
 	// Gets the URLs for static "live" camera images of a given room (String room must be in the format "Room [#]")
@@ -229,16 +230,16 @@ public class CameraFragment extends Fragment {
 		}
 
 		// Sets the bitmap into the camera image view
-		@Override
-		protected void onPostExecute(Bitmap result) {
-			if (result != null) {
-				mCameraImageView.setImageBitmap(result);
-				
-				if (mAppState.getCurrentRoom().getImages().size() > 0) {
-					mCameraImageView.setVisibility(android.view.View.VISIBLE);
-				}
-			}
-		}
+//		@Override
+//		protected void onPostExecute(Bitmap result) {
+//			if (result != null) {
+//				mCameraImageView.setImageBitmap(result);
+//				
+//				if (mAppState.getCurrentRoom().getImages().size() > 0) {
+//					mCameraImageView.setVisibility(android.view.View.VISIBLE);
+//				}
+//			}
+//		}
 	}
 
 	/*private class UrlCheckerTask extends AsyncTask<String, Void, Boolean> {

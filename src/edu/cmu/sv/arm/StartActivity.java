@@ -291,9 +291,9 @@ public class StartActivity extends Activity {
 					else if (tagName.equals("room")) {
 						parseRoomInfo(currentRoom, attrName, attrValue);
 					}
-					else if (tagName.equals("image")) {
-						parseImageInfo(currentRoom, attrName, attrValue);
-					}
+//					else if (tagName.equals("image")) {
+//						parseImageInfo(currentRoom, attrName, attrValue);
+//					}
 				}
 				break;
 			case XmlPullParser.END_TAG:
@@ -328,27 +328,27 @@ public class StartActivity extends Activity {
 	    mStartButton.setEnabled(true);
 	}
 
-	private void parseImageInfo(Room currentRoom, String attrName,
-			String attrValue) {
-		if (attrName.equals("url")) {
-			RoomImage roomImage = new RoomImage(attrValue);
-			currentRoom.addImage(roomImage);
-		}
-		else {
-			RoomImage lastRoomImage = currentRoom.getImages().get(currentRoom.getImages().size() - 1);
-			int value = Integer.parseInt(attrValue);
-			
-			if (attrName.equals("refresh_delay_minutes")) {
-				lastRoomImage.setRefreshDelayMinutes(value);
-			}
-			else if (attrName.equals("refresh_delay_seconds")) {
-				lastRoomImage.setRefreshDelaySeconds(value);
-			}
-			else if (attrName.equals("refresh_delay_milliseconds")) {
-				lastRoomImage.setRefreshDelayMilliseconds(value);
-			}
-		}
-	}
+//	private void parseImageInfo(Room currentRoom, String attrName,
+//			String attrValue) {
+//		if (attrName.equals("url")) {
+//			RoomImage roomImage = new RoomImage(attrValue);
+//			currentRoom.addImage(roomImage);
+//		}
+//		else {
+//			RoomImage lastRoomImage = currentRoom.getImages().get(currentRoom.getImages().size() - 1);
+//			int value = Integer.parseInt(attrValue);
+//			
+//			if (attrName.equals("refresh_delay_minutes")) {
+//				lastRoomImage.setRefreshDelayMinutes(value);
+//			}
+//			else if (attrName.equals("refresh_delay_seconds")) {
+//				lastRoomImage.setRefreshDelaySeconds(value);
+//			}
+//			else if (attrName.equals("refresh_delay_milliseconds")) {
+//				lastRoomImage.setRefreshDelayMilliseconds(value);
+//			}
+//		}
+//	}
 
 	private void parseRoomInfo(Room currentRoom, String attrName,
 			String attrValue) {

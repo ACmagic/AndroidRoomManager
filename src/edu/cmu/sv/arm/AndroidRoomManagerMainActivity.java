@@ -1,4 +1,4 @@
-package edu.cmu.sv.arm;
+	package edu.cmu.sv.arm;
 
 import java.util.GregorianCalendar;
 import java.util.Vector;
@@ -144,7 +144,6 @@ public class AndroidRoomManagerMainActivity extends Activity {
 	    	// Intentionally left blank
 	    case R.id.resetButton:
 	    	updateRoomNumber();
-	    	//resetCameraFragment(true);
 	    	return true;
 	    default:
 	        return super.onOptionsItemSelected(item);
@@ -374,8 +373,6 @@ public class AndroidRoomManagerMainActivity extends Activity {
 				updateRoomNumber();
 				
 				updateContacts();
-				
-				//resetCameraFragment(true);
 		    	
 				setupApplicationResetter();
 			}
@@ -468,9 +465,6 @@ public class AndroidRoomManagerMainActivity extends Activity {
     
     // Runs when the preferences have changed
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-//		if (key.equals("maximumNumberOfCamerasPerRoom") || key.equals("cameraRefreshDelay")) {
-//			resetCameraFragment(false);
-//		}
 		if (key.equals("roomNumberPref")) {
 			updateRoomNumber();
 		}
@@ -508,8 +502,6 @@ public class AndroidRoomManagerMainActivity extends Activity {
 			public boolean onNavigationItemSelected(int itemPosition, long itemId) {				
 				mAppState.setCurrentRoom(mAppState.getNumberAddressedRooms().get(mAppState.getRooms().get(itemPosition)));
 				
-				//resetCameraFragment(true);
-				
 				restartCalendarFragmentEventsUpdater();
 				
 				return false;
@@ -528,12 +520,6 @@ public class AndroidRoomManagerMainActivity extends Activity {
 				mCalendarFragment.setSelectedDate(new GregorianCalendar(year, month, dayOfMonth).getTime());
 			}
 		});
-    }
-    
-    //Resets the camera fragment
-    public void resetCameraFragment(boolean resetCamera) {
-		CameraFragment cameraFragment = (CameraFragment) getFragmentManager().findFragmentById(R.id.cameraFragment);
-		cameraFragment.reset(resetCamera);
     }
     
     // Shows the loading splash screen

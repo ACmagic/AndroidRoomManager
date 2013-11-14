@@ -37,44 +37,8 @@ public class CameraFragment extends Fragment {
 		View cameraView = inflater.inflate(R.layout.camera, container, false);
 		
 		mAppState = ((ARM) getActivity().getApplication());
-
-		//mCameraImageView = (ImageView) cameraView.findViewById(R.id.cameraImageView);
 		mNoCamerasTextView = (TextView) cameraView.findViewById(R.id.noCamerasTextView);
 		
-		//mCameraURLs = new Vector<String>();
-		
-		//updateCameraURLs();
-//		mOnCamera = 0;
-		
-//		mCameraImageView.setOnClickListener(new View.OnClickListener() {
-//			public void onClick(View v) {
-//				cycleCamera();
-//		    }
-//		});
-
-//		mUpdateHandler = new Handler();
-//
-//		mUpdater = new Runnable() {
-//			public void run() {
-//				if (mCurrentGetBitmap != null) {
-//					mCurrentGetBitmap.cancel(true);
-//					mCurrentGetBitmap = null;
-//				}
-//				mCurrentGetBitmap = new CameraBitmapTask();
-//
-//				try {
-//					mCurrentGetBitmap.execute();
-//				} catch (Exception e) {
-//					// OK to do nothing here (there simply will not be an update)
-//				}
-//				
-//				if (mAppState.getCurrentRoom().getImages().size() > mOnCamera) {
-//					RoomImage ri = mAppState.getCurrentRoom().getImages().get(mOnCamera);
-//					mUpdateHandler.postDelayed(mUpdater, ri.getRefreshDelayMilliseconds() + ri.getRefreshDelaySeconds() * DateTimeHelpers.SECOND_IN_MILLISECONDS + ri.getRefreshDelayMinutes() * DateTimeHelpers.MINUTE_IN_MILLISECONDS);
-//				}
-//			}
-//		};
-//		
 		updateCameraDisplayArea();
 
 		return cameraView;
@@ -99,52 +63,7 @@ public class CameraFragment extends Fragment {
 		}
 	}
 	
-	// Cycles the current camera to the next one
-	public void cycleCamera() {
-		int oldOnCamera = mOnCamera;
-		
-		if (mOnCamera + 1 < mAppState.getCurrentRoom().getImages().size()) {
-			mOnCamera++;
-		}
-		else {
-			mOnCamera = 0;
-		}
-		
-		if (oldOnCamera != mOnCamera) {
-			restartUpdater();
-		}
-	}
-
-	// Starts the updater for the camera image
-	public void startUpdater() {
-		if (mUpdater != null) {
-			mUpdater.run();
-		}
-	}
-
-	// Stops the updater for the camera image
-	public void stopUpdater() {
-		if (mUpdateHandler != null && mUpdater != null) {
-			mUpdateHandler.removeCallbacks(mUpdater);
-		}
-	}
 	
-	// Restarts the updater for the camera image
-	public void restartUpdater() {
-		stopUpdater();
-		startUpdater();
-	}
-	
-	// Used for resetting the camera fragment
-	public void reset(boolean resetCamera) {
-		updateCameraURLs();
-		
-		if (resetCamera) {
-			mOnCamera = 0;
-		}
-		
-		updateCameraDisplayArea();
-	}
 	
 	// Used for updating the camera display area (if there are no cameras, will display a message that states so and stop the camera updater; otherwise, hide the message and start the updater)
 	private void updateCameraDisplayArea() {
@@ -159,7 +78,7 @@ public class CameraFragment extends Fragment {
 //			
 //			mNoCamerasTextView.setVisibility(android.view.View.GONE);
 //		}
-		mNoCamerasTextView.setVisibility(android.view.View.VISIBLE);
+		
 	}
 
 	// Gets the URLs for static "live" camera images of a given room (String room must be in the format "Room [#]")

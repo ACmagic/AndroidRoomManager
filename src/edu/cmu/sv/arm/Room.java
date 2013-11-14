@@ -8,6 +8,7 @@ public class Room {
 	private String mNumber;
 	private String mResourceAddress;
 	private ArrayList<RoomImage> mRoomImages;
+	private String mCapacity;
 	
 	public Room() {
 		mIsDefault = false;
@@ -50,6 +51,14 @@ public class Room {
 		this.mResourceAddress = resourceAddress;
 	}
 	
+	public String getCapacity() {
+		return mCapacity;
+	}
+	
+	public void setCapacity(String capacity) {
+		this.mCapacity = capacity;
+	}
+	
 	public ArrayList<RoomImage> getImages() {
 		return mRoomImages;
 	}
@@ -82,4 +91,6 @@ public class Room {
 		
 		return hashCode;
 	}
+
+	
 }

@@ -14,19 +14,24 @@ import android.app.Application;
 import android.media.MediaScannerConnection;
 import android.media.MediaScannerConnection.OnScanCompletedListener;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
 
-public class StartActivityController {
+enum ConfigurationStatus {USING_CUSTOM_SETTINGS_FILE, USING_DEFAULT_SETTINGS_FILE,
+	READ_MEDIA_ERROR, UNEXPECTED_ERROR}
+
+public class StartActivityController extends AsyncTask <Void, Void, ConfigurationStatus>{
 	private ARM mAppState;
-	private Application mApplication;
+	// Pass files from view instead
+	private Application mApplication; 
+	private OnTaskCompleted mTaskCompletedCallback;
 	
-	enum ConfigurationStatus {USING_CUSTOM_SETTINGS_FILE, USING_DEFAULT_SETTINGS_FILE,
-		READ_MEDIA_ERROR, UNEXPECTED_ERROR}
 	
-	public StartActivityController(Application app)
+	public StartActivityController(Application app, OnTaskCompleted callback)
 	{
-		mApplication = app; 
-		mAppState = ((ARM) app);
+		this.mApplication = app; 
+		this.mAppState = ((ARM) app);
+		this.mTaskCompletedCallback = callback;
 	}
 	
 	public void resetApplicationState(){
@@ -285,5 +290,18 @@ public class StartActivityController {
 			}
 		});
 	}
+
+	@Override
+	protected ConfigurationStatus doInBackground(Void... arg0) {
+		return this.configureApplication();
+	}
+	
+	@Override
+	protected void onPostExecute(ConfigurationStatus configurationStatus){
+		this.mTaskCompletedCallback.onTaskCompleted(configurationStatus);
+	}
+	
 	
 }
+
+

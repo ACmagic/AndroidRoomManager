@@ -10,7 +10,6 @@ import java.io.InputStream;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-import edu.cmu.sv.arm.StartActivityController.ConfigurationStatus;
 import android.app.Activity;
 import android.content.Intent;
 import android.media.MediaScannerConnection;
@@ -18,19 +17,22 @@ import android.media.MediaScannerConnection.OnScanCompletedListener;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-public class StartActivity extends Activity {
+public class StartActivity extends Activity implements OnTaskCompleted {
 	private ARM mAppState;
 	private Button mStartButton;
 	
 	private TextView mStatusTextView;
 	private ScrollView mStatusScrollView;
 	private StartActivityController mController;
+	//private OnTaskCompleted mTaskCompletedCallback;
 		
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -49,7 +51,7 @@ public class StartActivity extends Activity {
 	    		startActivity(armMain);
 			}
 		});
-        mController = new StartActivityController(getApplication());
+        mController = new StartActivityController(getApplication(), this);
         
         mAppState = ((ARM) getApplication()); 
         
@@ -80,35 +82,42 @@ public class StartActivity extends Activity {
 	}
 
 	private void configureApplication(){
-		ConfigurationStatus application_configuration_status = mController.configureApplication();
-    	 switch (application_configuration_status) {
-    	 	case READ_MEDIA_ERROR:
-	    		addLineToStatus("Unable to access media storage. Please check device settings.");
-	    		addLineToStatus("Parsing empty settings...");
-	    		addLineToStatus("Application state ready.");
-	    		addLineToStatus("You can press the \"Start\" button to start the application with empty settings.");
-	    		break;
-    		case USING_CUSTOM_SETTINGS_FILE:
-				addLineToStatus("Settings file found. Parsing...");
-				mStartButton.setEnabled(false);    			
-				addLineToStatus("Application state ready.");
-				Intent armMain = new Intent(getBaseContext(), AndroidRoomManagerMainActivity.class);
-				startActivity(armMain);
-				break;
-			case USING_DEFAULT_SETTINGS_FILE:
-				break;
-			case UNEXPECTED_ERROR:
-				addLineToStatus("There has been an unexpected error: "); //excpetion msg?
-				break;
-    	}
-        addLineToStatus("Parsing complete.");
-		mStartButton.setEnabled(true);
+		//ConfigurationStatus application_configuration_status = mController.execute();
+		mController.execute();
 	}
 	
-	
+			  
+			 
 	
 	@Override
 	public void onPause() {
 		super.onPause();
+	}
+
+	// Rename method?
+	public void onTaskCompleted(ConfigurationStatus application_configuration_status) {
+		switch (application_configuration_status) {
+	 	case READ_MEDIA_ERROR:
+			addLineToStatus("Unable to access media storage. Please check device settings.");
+		addLineToStatus("Parsing empty settings...");
+		addLineToStatus("Application state ready.");
+		addLineToStatus("You can press the \"Start\" button to start the application with empty settings.");
+		break;
+		case USING_CUSTOM_SETTINGS_FILE:
+			addLineToStatus("Settings file found. Parsing...");
+			mStartButton.setEnabled(false);    			
+			addLineToStatus("Application state ready.");
+			Intent armMain = new Intent(getBaseContext(), AndroidRoomManagerMainActivity.class);
+			startActivity(armMain);
+			break;
+		case USING_DEFAULT_SETTINGS_FILE:
+			break;
+		case UNEXPECTED_ERROR:
+		addLineToStatus("There has been an unexpected error: "); //excpetion msg?
+			break;
+	}
+	addLineToStatus("Parsing complete.");
+	mStartButton.setEnabled(true);  
+		
 	}
 }

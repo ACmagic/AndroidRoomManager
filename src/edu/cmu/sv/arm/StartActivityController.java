@@ -24,10 +24,9 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 	private ARM mAppState;
 	// Pass files from view instead
 	private Application mApplication; 
-	private OnTaskCompleted mTaskCompletedCallback;
+	private AsyncTaskCompleteListener<ConfigurationStatus> mTaskCompletedCallback;
 	
-	
-	public StartActivityController(Application app, OnTaskCompleted callback)
+	public StartActivityController(Application app, AsyncTaskCompleteListener<ConfigurationStatus> callback)
 	{
 		this.mApplication = app; 
 		this.mAppState = ((ARM) app);
@@ -298,6 +297,7 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 	
 	@Override
 	protected void onPostExecute(ConfigurationStatus configurationStatus){
+		super.onPostExecute(configurationStatus);
 		this.mTaskCompletedCallback.onTaskCompleted(configurationStatus);
 	}
 	

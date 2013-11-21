@@ -1,38 +1,20 @@
 package edu.cmu.sv.arm;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserFactory;
-
 import android.app.Activity;
 import android.content.Intent;
-import android.media.MediaScannerConnection;
-import android.media.MediaScannerConnection.OnScanCompletedListener;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-public class StartActivity extends Activity implements OnTaskCompleted {
-	private ARM mAppState;
+public class StartActivity extends Activity implements AsyncTaskCompleteListener<ConfigurationStatus> {
 	private Button mStartButton;
 	
 	private TextView mStatusTextView;
 	private ScrollView mStatusScrollView;
-	private StartActivityController mController;
-	//private OnTaskCompleted mTaskCompletedCallback;
+	//private StartActivityController mController;
 		
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,10 +33,6 @@ public class StartActivity extends Activity implements OnTaskCompleted {
 	    		startActivity(armMain);
 			}
 		});
-        mController = new StartActivityController(getApplication(), this);
-        
-        mAppState = ((ARM) getApplication()); 
-        
 	}
 	
 	private void addLineToStatus(String line) {
@@ -78,16 +56,14 @@ public class StartActivity extends Activity implements OnTaskCompleted {
 	}
 
 	private void resetApplicationState() {
-		mController.resetApplicationState();
+		//Check this!
+		new StartActivityController(getApplication(), null).resetApplicationState();
 	}
 
 	private void configureApplication(){
-		//ConfigurationStatus application_configuration_status = mController.execute();
-		mController.execute();
+		new StartActivityController(this.getApplication(), this).execute();
 	}
 	
-			  
-			 
 	
 	@Override
 	public void onPause() {

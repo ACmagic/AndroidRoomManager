@@ -14,7 +14,6 @@ public class StartActivity extends Activity implements AsyncTaskCompleteListener
 	
 	private TextView mStatusTextView;
 	private ScrollView mStatusScrollView;
-	//private StartActivityController mController;
 		
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -26,6 +25,7 @@ public class StartActivity extends Activity implements AsyncTaskCompleteListener
         mStatusTextView = ((TextView) findViewById(R.id.statusTextView));
         mStatusScrollView = ((ScrollView) findViewById(R.id.statusScrollView));
         
+        // This button will be displayed if the application cannot be load with a custom configuration.
         mStartButton.setOnClickListener(new OnClickListener() {
 			
 			public void onClick(View v) {
@@ -35,7 +35,7 @@ public class StartActivity extends Activity implements AsyncTaskCompleteListener
 		});
 	}
 	
-	private void addLineToStatus(String line) {
+	private void displayMessageInStatusView(String line) {
 		mStatusTextView.setText(mStatusTextView.getText() + "\n> " + line);
 		
 		mStatusScrollView.post(new Runnable() {
@@ -57,7 +57,7 @@ public class StartActivity extends Activity implements AsyncTaskCompleteListener
 
 	private void resetApplicationState() {
 		//Check this!
-		new StartActivityController(getApplication(), null).resetApplicationState();
+		new StartActivityController(this.getApplication(), null).resetApplicationState();
 	}
 
 	private void configureApplication(){
@@ -69,31 +69,27 @@ public class StartActivity extends Activity implements AsyncTaskCompleteListener
 	public void onPause() {
 		super.onPause();
 	}
-
-	// Rename method?
+	
+	// This method is invoked once the configuration file parsing is finished.
 	public void onTaskCompleted(ConfigurationStatus application_configuration_status) {
-		switch (application_configuration_status) {
-	 	case READ_MEDIA_ERROR:
-			addLineToStatus("Unable to access media storage. Please check device settings.");
-		addLineToStatus("Parsing empty settings...");
-		addLineToStatus("Application state ready.");
-		addLineToStatus("You can press the \"Start\" button to start the application with empty settings.");
-		break;
-		case USING_CUSTOM_SETTINGS_FILE:
-			addLineToStatus("Settings file found. Parsing...");
+		if(application_configuration_status == ConfigurationStatus.USING_CUSTOM_SETTINGS_FILE){
 			mStartButton.setEnabled(false);    			
-			addLineToStatus("Application state ready.");
+			displayMessageInStatusView("Application state ready.");
 			Intent armMain = new Intent(getBaseContext(), AndroidRoomManagerMainActivity.class);
 			startActivity(armMain);
-			break;
-		case USING_DEFAULT_SETTINGS_FILE:
-			break;
-		case UNEXPECTED_ERROR:
-		addLineToStatus("There has been an unexpected error: "); //excpetion msg?
-			break;
-	}
-	addLineToStatus("Parsing complete.");
-	mStartButton.setEnabled(true);  
+		}
+		else if (application_configuration_status == ConfigurationStatus.USING_DEFAULT_SETTINGS_FILE){
+		
+			// Do we actually want to load with default settings? Is it there any value?
+			displayMessageInStatusView("Using default settings file");
+			mStartButton.setEnabled(true);  
+		}
+		else
+		{
+			// Should we close the app if no configuration is there?
+			displayMessageInStatusView("There has been an unexpected error. The application will close... "); //exception msg?
+			mStartButton.setEnabled(false);    			
+		}
 		
 	}
 }

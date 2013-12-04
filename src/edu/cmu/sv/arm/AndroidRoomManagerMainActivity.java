@@ -3,10 +3,6 @@
 import java.util.GregorianCalendar;
 import java.util.Vector;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.accounts.AccountManagerCallback;
-import android.accounts.AccountManagerFuture;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Dialog;
@@ -34,18 +30,9 @@ import android.widget.CalendarView.OnDateChangeListener;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
-import com.google.api.client.auth.oauth2.draft10.AccessProtectedResource;
-import com.google.api.client.extensions.android2.AndroidHttp;
-import com.google.api.client.googleapis.auth.oauth2.draft10.GoogleAccessProtectedResource;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.json.JsonHttpRequest;
-import com.google.api.client.http.json.JsonHttpRequestInitializer;
-import com.google.api.client.json.jackson.JacksonFactory;
-import com.google.api.services.calendar.Calendar;
-import com.google.api.services.calendar.CalendarRequest;
-
-public class AndroidRoomManagerMainActivity extends Activity {
-	private ARM mAppState;
+public class AndroidRoomManagerMainActivity extends Activity implements AsyncTaskCompleteListener{
+	
+	//private ARM mAppState;
 	private Dialog mLoadingDialog;
 	private ActionBar mActionBar;
 	
@@ -53,29 +40,23 @@ public class AndroidRoomManagerMainActivity extends Activity {
 	
 	private CalendarFragment mCalendarFragment;
 	
-	private Handler mGoogleAuthTokenUpdateHandler;
-	private Runnable mGoogleAuthTokenUpdater;
-	
 	private Handler mApplicationResetHandler;
 	private Runnable mApplicationResetter;
 	
 	private static final int LOADING_DIALOG_TIMEOUT = DateTimeHelpers.SECOND_IN_MILLISECONDS * 30;
 	
 	private TextView mActionBarTextView;
-	
-	private CalendarServiceRegistrationTask mCSRT;
-	private ContactsTask mCT;
+	private AndroidRoomManagerMainController mController = null;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
         showLoadingDialog();
-        
-        mAppState = ((ARM) getApplication());
-        
-        mAppState.setMainActivity(this);
-        
+
+        // Check arguments!
+        mController = new AndroidRoomManagerMainController(this, this, getString(R.string.app_name_extended));
+
         configurePreferences();
         
         setContentView(R.layout.main);
@@ -88,7 +69,7 @@ public class AndroidRoomManagerMainActivity extends Activity {
         
         updateRoomNumber();
         
-        updateContacts();
+        mController.updateContacts(this);
         
         configureRunnables();
         
@@ -99,25 +80,14 @@ public class AndroidRoomManagerMainActivity extends Activity {
     public void onResume() {
     	super.onResume();
     	
-    	startGoogleAuthTokenUpdater();
+    	//startGoogleAuthTokenUpdater();
     	setupApplicationResetter();
     }
     
     @Override
     public void onPause() {
     	super.onPause();
-    	
-    	if (mCSRT != null) {
-			mCSRT.cancel(true);
-			mCSRT = null;
-		}
-    	
-    	if (mCT != null) {
-    		mCT.cancel(true);
-    		mCT = null;
-    	}
-    	
-    	stopGoogleAuthTokenUpdater();
+    	this.mController.stopResources();;
     	stopApplicationResetter();
     	
     	if (mCalendarFragment != null) {
@@ -155,162 +125,7 @@ public class AndroidRoomManagerMainActivity extends Activity {
     	resetApplicationResetter();
     }
     
-    // Sets up the preferences authentication dialog
-    /*private void setupPreferencesAuthenticationDialog() {
-    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-    	LayoutInflater inflater = (LayoutInflater) this.getSystemService(LAYOUT_INFLATER_SERVICE);
-    	final View layout = inflater.inflate(R.layout.preferences_authentication_dialog, null);
-    	
-    	final CheckBox changePasswordCheckBox = (CheckBox) layout.findViewById(R.id.changePasswordCheckBox);
-    	final LinearLayout changePasswordLinearLayout = (LinearLayout) layout.findViewById(R.id.changePasswordLinearLayout);
-    	final EditText newPreferencesPasswordEditText = (EditText) layout.findViewById(R.id.newPreferencesPasswordEditText);
-    	final EditText confirmedNewPreferencesPasswordEditText = (EditText) layout.findViewById(R.id.confirmedNewPreferencesPasswordEditText);
-    	
-    	changePasswordCheckBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if (isChecked) {
-					changePasswordLinearLayout.setVisibility(View.VISIBLE);
-				}
-				else {
-					newPreferencesPasswordEditText.setText("");
-					confirmedNewPreferencesPasswordEditText.setText("");
-					changePasswordLinearLayout.setVisibility(View.GONE);
-				}
-			}
-		});
-
-    	builder.setView(layout);
-    	builder.setTitle(R.string.preferences_authentication);
-    	
-    	builder.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {
-				
-			}
-		});
-    	
-    	builder.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {
-				
-			}
-		});
-    	
-    	final AlertDialog alertDialog = builder.create();
-    	
-    	alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-			
-			public void onShow(DialogInterface dialog) {
-                Button button = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-                button.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View v) {
-                    	SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mAppState);
-        				String storedPassword = preferences.getString("preferencesPassword", "0000");
-        				
-        				EditText preferencesPasswordEditText = (EditText) layout.findViewById(R.id.preferencesPasswordEditText);
-        				
-        				String enteredPassword = "";
-        				
-        				// Source: http://www.mkyong.com/java/java-sha-hashing-example/
-        				try {
-        		        	MessageDigest messageDigest = MessageDigest.getInstance("SHA-512");
-        		        	messageDigest.update(preferencesPasswordEditText.getText().toString().getBytes());
-        		        	
-        		        	byte bytes[] = messageDigest.digest();
-        		        	
-        		        	StringBuffer stringBuffer = new StringBuffer();
-        		        	
-        		            for (int i = 0; i < bytes.length; i++) {
-        		                	stringBuffer.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
-        		            }
-        		        	
-        		        	enteredPassword = stringBuffer.toString();
-        		        }
-        		        catch (Exception e) {
-        		        	// Intentionally left blank
-        		        }
-        				
-        				if (storedPassword.equals(enteredPassword)) {
-        					if (changePasswordCheckBox.isChecked()) {
-        						String newPassword = newPreferencesPasswordEditText.getText().toString();
-        						String newConfirmedPassword = confirmedNewPreferencesPasswordEditText.getText().toString();
-        						if (newPassword.isEmpty() && newConfirmedPassword.isEmpty()) {
-        							AlertDialog.Builder builder = new AlertDialog.Builder(CMUSVAndroidRoomManager.this);
-                					builder.setTitle(getString(R.string.error));
-            						builder.setMessage(getString(R.string.no_new_password));
-                					builder.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
-                						public void onClick(DialogInterface dialog, int which) {
-                							
-                						}
-                					});
-                					builder.show();
-                					
-                					return;
-        						}
-        						if (newPassword.equals(newConfirmedPassword)) {
-        					        try {
-        	        		        	MessageDigest messageDigest = MessageDigest.getInstance("SHA-512");
-        	        		        	messageDigest.update(newPassword.toString().getBytes());
-        	        		        	
-        	        		        	byte bytes[] = messageDigest.digest();
-        	        		        	
-        	        		        	StringBuffer stringBuffer = new StringBuffer();
-        	        		        	
-        	        		            for (int i = 0; i < bytes.length; i++) {
-        	        		            	stringBuffer.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
-        	        		            }
-        	        		            
-        	        		            SharedPreferences.Editor editor = preferences.edit();
-        	        		        	
-        	        		            editor.putString("preferencesPassword", stringBuffer.toString());
-            					        
-            					        editor.commit();
-        	        		        }
-        	        		        catch (Exception e) {
-        	        		        	// Intentionally left blank
-        	        		        }
-        						}
-        						else {
-        							AlertDialog.Builder builder = new AlertDialog.Builder(CMUSVAndroidRoomManager.this);
-                					builder.setTitle(getString(R.string.error));
-            						builder.setMessage(getString(R.string.passwords_do_not_match));
-                					builder.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
-                						public void onClick(DialogInterface dialog, int which) {
-                							
-                						}
-                					});
-                					builder.show();
-                					
-                					return;
-        						}
-        					}
-        					
-        					Intent preferencesActivity = new Intent(getBaseContext(), Preferences.class);
-        					startActivity(preferencesActivity);
-        					alertDialog.dismiss();
-        				}
-        				else {
-        					AlertDialog.Builder builder = new AlertDialog.Builder(CMUSVAndroidRoomManager.this);
-        					builder.setTitle(getString(R.string.error));
-        					if (preferencesPasswordEditText.getText().length() == 0) {
-        						builder.setMessage(getString(R.string.no_password));
-        					}
-        					else {
-        						builder.setMessage(getString(R.string.incorrect_password));
-        					}
-        					builder.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
-        						public void onClick(DialogInterface dialog, int which) {
-        							
-        						}
-        					});
-        					builder.show();
-        				}
-                    }
-                });
-			}
-		});
-    	
-    	alertDialog.show();
-    }*/
+    
     
     public void stopApplicationResetter() {
     	if (mApplicationResetHandler != null && mApplicationResetter != null) {
@@ -326,27 +141,17 @@ public class AndroidRoomManagerMainActivity extends Activity {
     
     // Adds the application resetter task to the application reset handler
     private void setupApplicationResetter() {
-    	mApplicationResetHandler.postDelayed(mApplicationResetter, PreferenceManager.getDefaultSharedPreferences(mAppState).getInt("applicationTimeout", 5) * DateTimeHelpers.MINUTE_IN_MILLISECONDS);
+    	//Check!
+    	mApplicationResetHandler.postDelayed(mApplicationResetter, PreferenceManager.getDefaultSharedPreferences(
+    			this.mController.getApplicationState()).getInt("applicationTimeout", 5) * DateTimeHelpers.MINUTE_IN_MILLISECONDS);
     }
     
     // Updates the room number application-wide
     public void updateRoomNumber() { 
-    	int navigationItemIndex = 0;
-    	
-    	if (mAppState.getDefaultRoom() != null) {
-	    	String defaultRoom = mAppState.getDefaultRoom().getFullName();
-			
-			for (int i = 0; i < mAppState.getRooms().size(); i++) {
-				if (mAppState.getRooms().get(i).equals(defaultRoom)) {
-					navigationItemIndex = i;
-					break;
-				}
-			}
-		}
+    	int navigationItemIndex = this.mController.getDefaultRoom();
 		
 		if (mActionBar != null) {
 			mActionBar.setSelectedNavigationItem(navigationItemIndex);
-			//mCalendarView.setDate(DateTimeHelpers.getCurrentDate().getTime() - DateTimeHelpers.DAY_IN_MILLISECONDS);
 			mCalendarView.setDate(DateTimeHelpers.getCurrentDate().getTime());
 			mCalendarFragment.resetCalendarScroll();
 		}
@@ -354,91 +159,18 @@ public class AndroidRoomManagerMainActivity extends Activity {
     
     // Configures the background tasks
     private void configureRunnables() {
-    	mGoogleAuthTokenUpdateHandler = new Handler();
-		
-        mGoogleAuthTokenUpdater = new Runnable() {
-			public void run() {    	 
-				obtainGoogleAuthToken();
-		    	 
-				mGoogleAuthTokenUpdateHandler.postDelayed(mGoogleAuthTokenUpdater, DateTimeHelpers.getMillisecondsUntilNextMinute() + DateTimeHelpers.MINUTE_IN_MILLISECONDS * 30);
-			}
-		};
-		
-		startGoogleAuthTokenUpdater();
-		
+    	mController.configureCalendarRunnable();
 		mApplicationResetHandler = new Handler();
-		
 		mApplicationResetter = new Runnable() {
 			public void run() {    	 
 				updateRoomNumber();
-				
-				updateContacts();
-		    	
+				mController.updateContacts(getBaseContext());
 				setupApplicationResetter();
 			}
 		};
-		
 		setupApplicationResetter();
     }
     
-    // Update contacts
-    private void updateContacts() {
-    	if (mCT != null) {
-    		mCT.cancel(true);
-    		mCT = null;
-    	}
-    	
-    	mCT = new ContactsTask();
-    	
-    	mCT.execute();
-    }
-    
-    // ContactsTask pulls all of the contacts from the device, not just from the provided account
-    // This may be an issue (not sure how to pull contacts just for a specified account)
-    private class ContactsTask extends AsyncTask<Void, Void, Vector<String>> {
-		@Override
-		protected Vector<String> doInBackground(Void... params) {
-			Uri uri = ContactsContract.Contacts.CONTENT_URI;
-	        String[] projection = new String[] { BaseColumns._ID, ContactsContract.Contacts.DISPLAY_NAME };
-	        String selection = null;
-	        String[] selectionArgs = null;
-	        String sortOrder = ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
-	        
-	        Vector<String> cntcts = new Vector<String>();
-	        
-	    	Cursor contacts = getContentResolver().query(uri, projection, selection, selectionArgs, sortOrder);
-	    	
-	        while (contacts.moveToNext()) {
-	        	String contactId = contacts.getString(contacts.getColumnIndex(BaseColumns._ID)); 
-	        	
-	        	Cursor emails = getContentResolver().query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, null, ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = " + contactId, null, null);
-	        	
-	        	while (emails.moveToNext()) { 
-	        	   String email = emails.getString(emails.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS)); 
-	        	   
-	        	   cntcts.add(email);
-	        	}
-	        	emails.close();
-	        } 
-	        contacts.close();
-	        
-	        return cntcts;
-		}
-		
-		@Override
-    	protected void onPreExecute() {
-    		super.onPreExecute();
-    	}
-    	
-    	@Override
-    	protected void onPostExecute(Vector<String> result) {
-    		super.onPostExecute(result);
-    		
-    		mAppState.setContacts(result);
-    		
-    		dismissLoadingDialog();
-    	}
-    }
     
     // Configures buttons
     private void configureButtons() {
@@ -457,7 +189,7 @@ public class AndroidRoomManagerMainActivity extends Activity {
             	Intent reserveRoomActivity = new Intent(getBaseContext(), ReserveRoomActivity.class);
             	reserveRoomActivity.putExtra("quickReservation", true);
             	
-            	reserveRoomActivity.putExtra("selectedRoom", mAppState.getRooms().get(mActionBar.getSelectedNavigationIndex()));
+            	reserveRoomActivity.putExtra("selectedRoom", mController.getApplicationState().getRooms().get(mActionBar.getSelectedNavigationIndex()));
         		startActivity(reserveRoomActivity);
             }
         });
@@ -474,7 +206,7 @@ public class AndroidRoomManagerMainActivity extends Activity {
     private void configurePreferences() {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         
-        setTitle(mAppState.getTitle());
+        setTitle(mController.getApplicationState().getTitle());
     }
     
     // Configures the action bar
@@ -483,7 +215,7 @@ public class AndroidRoomManagerMainActivity extends Activity {
     	mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
     	
     	mActionBarTextView = new TextView(this);
-    	mActionBarTextView.setText("[ Default: " + mAppState.getDefaultRoom().getFullName() + " ]");
+    	mActionBarTextView.setText("[ Default: " + mController.getApplicationState().getDefaultRoom().getFullName() + " ]");
     	
     	mActionBarTextView.setGravity(Gravity.CENTER_VERTICAL);
     	mActionBarTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
@@ -492,7 +224,7 @@ public class AndroidRoomManagerMainActivity extends Activity {
     	mActionBar.setDisplayShowCustomEnabled(true);
     	mActionBar.setCustomView(mActionBarTextView);
     	
-    	ArrayAdapter<CharSequence> aa = new ArrayAdapter<CharSequence>(this, R.layout.spinner_selector_text_view, mAppState.getRooms().toArray(new CharSequence[mAppState.getRooms().size()]));//ArrayAdapter.createFromResource(this, R.array.rooms, R.layout.spinner_selector_text_view);
+    	ArrayAdapter<CharSequence> aa = new ArrayAdapter<CharSequence>(this, R.layout.spinner_selector_text_view, mController.getApplicationState().getRooms().toArray(new CharSequence[mController.getApplicationState().getRooms().size()]));//ArrayAdapter.createFromResource(this, R.array.rooms, R.layout.spinner_selector_text_view);
     	aa.setDropDownViewResource(R.layout.spinner_dropdown_text_view);
     	
     	SpinnerAdapter spinnerAdapter = aa;
@@ -500,7 +232,7 @@ public class AndroidRoomManagerMainActivity extends Activity {
     	ActionBar.OnNavigationListener navigationCallback = new ActionBar.OnNavigationListener() {
     		// Occurs during room changes (non-preferences)
 			public boolean onNavigationItemSelected(int itemPosition, long itemId) {				
-				mAppState.setCurrentRoom(mAppState.getNumberAddressedRooms().get(mAppState.getRooms().get(itemPosition)));
+				mController.getApplicationState().setCurrentRoom(mController.getApplicationState().getNumberAddressedRooms().get(mController.getApplicationState().getRooms().get(itemPosition)));
 				
 				restartCalendarFragmentEventsUpdater();
 				
@@ -546,125 +278,17 @@ public class AndroidRoomManagerMainActivity extends Activity {
 		}
 	}
 	
-	private void startGoogleAuthTokenUpdater() {
-		if (mGoogleAuthTokenUpdater != null) {
-			mGoogleAuthTokenUpdater.run();
-		}
-	}
-	
-	private void stopGoogleAuthTokenUpdater() {
-		if (mGoogleAuthTokenUpdateHandler != null && mGoogleAuthTokenUpdater != null) {
-			mGoogleAuthTokenUpdateHandler.removeCallbacks(mGoogleAuthTokenUpdater);
-		}
-	}
-	
-	// Obtains a Google Auth Token
-    public void obtainGoogleAuthToken() {
-    	AccountManager accountManager = AccountManager.get(AndroidRoomManagerMainActivity.this.getBaseContext());
-    	Account[] accounts = accountManager.getAccountsByType("com.google");
-	    
-	    Account roomManagerAccount = null;
-	    
-	    for (int i = 0; i < accounts.length; i++) {
-	    	if (accounts[i].name.equalsIgnoreCase(mAppState.getGoogleAccountName())) {
-	    		roomManagerAccount = accounts[i];
-	    		break;
-	    	}
-	    }
-	    
-	    if (roomManagerAccount == null) {
-	    	// TODO What if appropriate account does not exist?
-	    }
-	    
-	    String authTokenType = "oauth2:https://www.googleapis.com/auth/calendar";
-	    
-	    
-	    if (roomManagerAccount != null) {
-		    accountManager.getAuthToken(roomManagerAccount, authTokenType, null, AndroidRoomManagerMainActivity.this, new AccountManagerCallback<Bundle>() {
-				public void run(AccountManagerFuture<Bundle> future) {
-		    		try {
-		    			// Grab an auth token
-		    			String authToken = future.getResult().getString(AccountManager.KEY_AUTHTOKEN);
-		    			
-		    			if (authToken == null) {
-		    				// TODO Need to throw an exception
-		    			}
-		    			else {
-		    				mAppState.setAuthToken(authToken);
-		    				
-		    				if (mCSRT != null) {
-		    					mCSRT.cancel(true);
-		    					mCSRT = null;
-		    				}
-		    				
-		    				mCSRT = new CalendarServiceRegistrationTask();
-		    				
-		    				mCSRT.execute(authToken);
-		    			}
-		    		} catch (Exception e) {
-		    			AndroidRoomManagerMainActivity.this.runOnUiThread(new Runnable() {
-							public void run() {
-					        	// TODO What if cannot obtain auth token??
-					        }
-					    });
-		    		}
-		        }
-		    }, null);
-	    
-	    }
-    }
-    
-    private class CalendarServiceRegistrationTask extends AsyncTask<String, Void, Calendar> {    	
-    	// Attempts to get a calendar service going
-    	// Arguments:
-    	// [0] - token
-    	@Override
-		protected Calendar doInBackground(String... args) {
-    		try {
-    			AccessProtectedResource accessProtectedResource = new GoogleAccessProtectedResource(args[0]);
- 	    	   	
-		    	HttpTransport transport = AndroidHttp.newCompatibleTransport();
-		    	
-		    	Calendar service = Calendar.builder(transport, new JacksonFactory())
-		    			.setApplicationName(getString(R.string.app_name_extended))
-		    			.setHttpRequestInitializer(accessProtectedResource)
-		    			.setJsonHttpRequestInitializer(new JsonHttpRequestInitializer() {
-							public void initialize(JsonHttpRequest request) {
-		    			        CalendarRequest calRequest = (CalendarRequest) request;
-		    					
-		    			        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mAppState);
-		    			        
-		    					String apiKey = mAppState.getGoogleCalendarAPIKey();//prefs.getString("googleCalendarAPIKey", "AIzaSyD8q4DB7NPcxBCEstCOowsazOZtQ5uzty8");
-		    			        
-		    			        calRequest.setKey(apiKey);
-		    			    }
-
-		    			}).build();
-		    	
-		    	return service;
-    		}
-    		catch (Exception e) {
-    			// TODO Perhaps may need to handle the exception
-    			return null;
-    		}
-    	}
-    	
-    	@Override
-    	protected void onPostExecute(Calendar result) {
-    		super.onPostExecute(result);
-    		
-    		if (result == null) {
-	    		// TODO Handle error
-    		}
-    		else {
-    			mAppState.setCalendar(result);
-    			
-    			restartCalendarFragmentEventsUpdater();
-    		}
-    	}
-    }
-    
     public void restartCalendarFragmentEventsUpdater() {
     	mCalendarFragment.restartEventsUpdater();
     }
+
+	public void onTaskCompleted(Object result) {
+		
+		restartCalendarFragmentEventsUpdater();
+		if (result instanceof Vector<?>){
+			//Check if this applies for both
+	        dismissLoadingDialog();
+		}
+		
+	}
 }

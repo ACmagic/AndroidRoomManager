@@ -64,7 +64,7 @@ public class AndroidRoomManagerMainActivity extends Activity implements AsyncTas
         mCalendarFragment = (CalendarFragment) getFragmentManager().findFragmentById(R.id.calendarFragment);
         
         configureActionBar();
-        
+		
         configureCalendarView();
         
         updateRoomNumber();

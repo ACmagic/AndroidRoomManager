@@ -29,6 +29,7 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 	
 	public StartActivityController(Application app, AsyncTaskCompleteListener<ConfigurationStatus> callback)
 	{
+		this.mApplication = app;
 		this.mAppState = ((ARM) app);
 		this.mTaskCompletedCallback = callback;
 	}

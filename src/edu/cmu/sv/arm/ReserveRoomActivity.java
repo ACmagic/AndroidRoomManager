@@ -48,9 +48,7 @@ import com.google.api.services.calendar.model.FreeBusyRequest;
 import com.google.api.services.calendar.model.FreeBusyRequestItem;
 import com.google.api.services.calendar.model.FreeBusyResponse;
 
-public class ReserveRoomActivity extends Activity {
-	private ARM mAppState;
-	
+public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteListener<Void> {	
 	private TextView mTitleBarTextView;
 	private EditText mTitleEditText;
 	private Button mStartingDateButton;
@@ -67,24 +65,21 @@ public class ReserveRoomActivity extends Activity {
 	static final int END_DATE_DIALOG_ID = 2;
 	static final int END_TIME_DIALOG_ID = 3;
 	
-	private Calendar mStartDateTimeCalendar;
-	private Calendar mEndDateTimeCalendar;
-	
 	private String mSelectedRoom;
 	
 	private ArrayList<String> mAvailableRooms;
 	
 	private AvailableRoomsTask mART;
+	private ReserveRoomController mController;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		mAppState = ((ARM) getApplication());
+		this.mController = new ReserveRoomController (this.getApplication(), this);
 		
 		setContentView(R.layout.reserve_room);
 		
-		setTitle(mAppState.getTitle() + " - " + getString(R.string.reserve_room_label));
+		setTitle(this.mController.getApplicationState().getTitle() + " - " + getString(R.string.reserve_room_label));
 		
 		// Suppresses keyboard when activity starts
 		//getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
@@ -102,9 +97,7 @@ public class ReserveRoomActivity extends Activity {
 		
 		setupEditTextFocus();
 		
-		setupStartEndCalendars();
-		
-		setupInitialTime();
+		this.mController.setupInitialTime(getIntent().getExtras());
 		
 		setDateTimeButtonsAndTitleText();
 		
@@ -170,18 +163,18 @@ public class ReserveRoomActivity extends Activity {
 				public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
 					Calendar oldCalendar = Calendar.getInstance();
 					
-					oldCalendar.setTimeInMillis(mStartDateTimeCalendar.getTimeInMillis());
+					oldCalendar.setTimeInMillis(mController.getmStartDateTimeCalendar().getTimeInMillis());
 					
-					mStartDateTimeCalendar.set(Calendar.MONDAY, monthOfYear);
-					mStartDateTimeCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+					mController.getmStartDateTimeCalendar().set(Calendar.MONDAY, monthOfYear);
+					mController.getmStartDateTimeCalendar().set(Calendar.DAY_OF_MONTH, dayOfMonth);
 					
-					if (oldCalendar.getTimeInMillis() != mStartDateTimeCalendar.getTimeInMillis()) {
+					if (oldCalendar.getTimeInMillis() != mController.getmStartDateTimeCalendar().getTimeInMillis()) {
 						cleanupDateTimeDialog(START_DATE_DIALOG_ID);
 					}
 				}
 			};
 			
-			DatePickerDialog startDateDialog = new DatePickerDialog(this, startDateSetListener, mStartDateTimeCalendar.get(Calendar.YEAR),  mStartDateTimeCalendar.get(Calendar.MONTH), mStartDateTimeCalendar.get(Calendar.DAY_OF_MONTH));
+			DatePickerDialog startDateDialog = new DatePickerDialog(this, startDateSetListener, mController.getmStartDateTimeCalendar().get(Calendar.YEAR),  mController.getmStartDateTimeCalendar().get(Calendar.MONTH), mController.getmStartDateTimeCalendar().get(Calendar.DAY_OF_MONTH));
 			startDateDialog.setTitle(getString(R.string.set_starting_date));
 			return startDateDialog;
 		case START_TIME_DIALOG_ID:
@@ -189,18 +182,18 @@ public class ReserveRoomActivity extends Activity {
 				public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 					Calendar oldCalendar = Calendar.getInstance();
 					
-					oldCalendar.setTimeInMillis(mStartDateTimeCalendar.getTimeInMillis());
+					oldCalendar.setTimeInMillis(mController.getmStartDateTimeCalendar().getTimeInMillis());
 					
-					mStartDateTimeCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-					mStartDateTimeCalendar.set(Calendar.MINUTE, minute);
+					mController.getmStartDateTimeCalendar().set(Calendar.HOUR_OF_DAY, hourOfDay);
+					mController.getmStartDateTimeCalendar().set(Calendar.MINUTE, minute);
 					
-					if (oldCalendar.getTimeInMillis() != mStartDateTimeCalendar.getTimeInMillis()) {
+					if (oldCalendar.getTimeInMillis() != mController.getmStartDateTimeCalendar().getTimeInMillis()) {
 						cleanupDateTimeDialog(START_TIME_DIALOG_ID);
 					}
 				}
 			};
 			
-			TimePickerDialog startTimeDialog = new TimePickerDialog(this, startTimeSetListener, mStartDateTimeCalendar.get(Calendar.HOUR_OF_DAY), mStartDateTimeCalendar.get(Calendar.MINUTE), false);
+			TimePickerDialog startTimeDialog = new TimePickerDialog(this, startTimeSetListener, mController.getmStartDateTimeCalendar().get(Calendar.HOUR_OF_DAY), mController.getmStartDateTimeCalendar().get(Calendar.MINUTE), false);
 			startTimeDialog.setTitle(getString(R.string.set_starting_time));
 			return startTimeDialog;
 		case END_DATE_DIALOG_ID:
@@ -208,18 +201,18 @@ public class ReserveRoomActivity extends Activity {
 				public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
 					Calendar oldCalendar = Calendar.getInstance();
 					
-					oldCalendar.setTimeInMillis(mEndDateTimeCalendar.getTimeInMillis());
+					oldCalendar.setTimeInMillis(mController.getmEndDateTimeCalendar().getTimeInMillis());
 					
-					mEndDateTimeCalendar.set(Calendar.MONDAY, monthOfYear);
-					mEndDateTimeCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+					mController.getmEndDateTimeCalendar().set(Calendar.MONDAY, monthOfYear);
+					mController.getmEndDateTimeCalendar().set(Calendar.DAY_OF_MONTH, dayOfMonth);
 					
-					if (oldCalendar.getTimeInMillis() != mEndDateTimeCalendar.getTimeInMillis()) {
+					if (oldCalendar.getTimeInMillis() != mController.getmEndDateTimeCalendar().getTimeInMillis()) {
 						cleanupDateTimeDialog(END_DATE_DIALOG_ID);
 					}
 				}
 			};
 			
-			DatePickerDialog endDateDialog = new DatePickerDialog(this, endDateSetListener, mEndDateTimeCalendar.get(Calendar.YEAR),  mEndDateTimeCalendar.get(Calendar.MONTH), mEndDateTimeCalendar.get(Calendar.DAY_OF_MONTH));
+			DatePickerDialog endDateDialog = new DatePickerDialog(this, endDateSetListener, mController.getmEndDateTimeCalendar().get(Calendar.YEAR),  mController.getmEndDateTimeCalendar().get(Calendar.MONTH), mController.getmEndDateTimeCalendar().get(Calendar.DAY_OF_MONTH));
 			endDateDialog.setTitle(getString(R.string.set_ending_date));
 			return endDateDialog;
 		case END_TIME_DIALOG_ID:
@@ -227,18 +220,18 @@ public class ReserveRoomActivity extends Activity {
 				public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 					Calendar oldCalendar = Calendar.getInstance();
 					
-					oldCalendar.setTimeInMillis(mEndDateTimeCalendar.getTimeInMillis());
+					oldCalendar.setTimeInMillis(mController.getmEndDateTimeCalendar().getTimeInMillis());
 					
-					mEndDateTimeCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-					mEndDateTimeCalendar.set(Calendar.MINUTE, minute);
+					mController.getmEndDateTimeCalendar().set(Calendar.HOUR_OF_DAY, hourOfDay);
+					mController.getmEndDateTimeCalendar().set(Calendar.MINUTE, minute);
 					
-					if (oldCalendar.getTimeInMillis() != mEndDateTimeCalendar.getTimeInMillis()) {
+					if (oldCalendar.getTimeInMillis() != mController.getmEndDateTimeCalendar().getTimeInMillis()) {
 						cleanupDateTimeDialog(END_TIME_DIALOG_ID);
 					}
 				}
 			};
 			
-			TimePickerDialog endTimeDialog = new TimePickerDialog(this, endTimeSetListener, mEndDateTimeCalendar.get(Calendar.HOUR_OF_DAY), mEndDateTimeCalendar.get(Calendar.MINUTE), false);
+			TimePickerDialog endTimeDialog = new TimePickerDialog(this, endTimeSetListener, mController.getmEndDateTimeCalendar().get(Calendar.HOUR_OF_DAY), mController.getmEndDateTimeCalendar().get(Calendar.MINUTE), false);
 			endTimeDialog.setTitle(getString(R.string.set_ending_time));
 			return endTimeDialog;
 		}
@@ -248,7 +241,7 @@ public class ReserveRoomActivity extends Activity {
 	
 	@Override
     public void onUserInteraction() {
-		mAppState.getMainActivity().resetApplicationResetter();
+		this.mController.getApplicationState().getMainActivity().resetApplicationResetter();
     }
 	
 	private void cleanupDateTimeDialog(int dialog) {
@@ -265,69 +258,19 @@ public class ReserveRoomActivity extends Activity {
 		mDescriptionEditText.setNextFocusDownId(R.id.hostEmailAutoCompleteTextView);
 	}
 	
-	private void setupStartEndCalendars() {
-		mStartDateTimeCalendar = Calendar.getInstance();
-		
-		mStartDateTimeCalendar.set(Calendar.MILLISECOND, 0);
-		mStartDateTimeCalendar.set(Calendar.SECOND, 0);
-		
-		mEndDateTimeCalendar = Calendar.getInstance();
-		
-		mEndDateTimeCalendar.set(Calendar.MILLISECOND, 0);
-		mEndDateTimeCalendar.set(Calendar.SECOND, 0);
-	}
-	
-	private void setupInitialTime() {
-		Bundle extras = getIntent().getExtras();
-		
-		Time start = new Time();
-        start.setToNow();
-		
-		if (extras != null && extras.containsKey("eventTime")) {
-			Calendar cal = Calendar.getInstance();
-			
-			// year
-			// month
-			// day_of_month
-			// hour
-			// minute
-			int [] eventTime = extras.getIntArray("eventTime");
-			
-			cal.set(Calendar.YEAR, eventTime[0]);
-			cal.set(Calendar.MONTH, eventTime[1]);
-			cal.set(Calendar.DAY_OF_MONTH, eventTime[2]);
-			cal.set(Calendar.HOUR_OF_DAY, eventTime[3]);
-			cal.set(Calendar.MINUTE, eventTime[4]);
-			
-			start.set(cal.getTimeInMillis());
-		}
-		
-        Time inAnHour = new Time();
-        inAnHour.set(start.toMillis(true) + DateTimeHelpers.HOUR_IN_MILLISECONDS);
-        inAnHour = DateTimeHelpers.nearestFifteenMinutes(inAnHour);
-        
-        mStartDateTimeCalendar.setTimeInMillis(start.toMillis(true));
-        mStartDateTimeCalendar.set(Calendar.MILLISECOND, 0);
-		mStartDateTimeCalendar.set(Calendar.SECOND, 0);
-		
-        mEndDateTimeCalendar.setTimeInMillis(inAnHour.toMillis(true));
-        mEndDateTimeCalendar.set(Calendar.MILLISECOND, 0);
-		mEndDateTimeCalendar.set(Calendar.SECOND, 0);
-	}
-	
 	private void setDateTimeButtonsAndTitleText() {
         String dateFormat = "E, MMM d, y"; // e.g. "Tue, Apr 17, 2012"
         String timeFormat = "hh:mm a"; // e.g. "08:02 PM"
         
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat, Locale.US);
         
-        String startingDate = sdf.format(new Date(mStartDateTimeCalendar.getTimeInMillis()));
-        String endingDate = sdf.format(new Date(mEndDateTimeCalendar.getTimeInMillis()));
+        String startingDate = sdf.format(new Date(mController.getmStartDateTimeCalendar().getTimeInMillis()));
+        String endingDate = sdf.format(new Date(mController.getmEndDateTimeCalendar().getTimeInMillis()));
         
         sdf = new SimpleDateFormat(timeFormat, Locale.US);
         
-        String startingTime = sdf.format(new Date(mStartDateTimeCalendar.getTimeInMillis()));
-        String endingTime = sdf.format(new Date(mEndDateTimeCalendar.getTimeInMillis()));
+        String startingTime = sdf.format(new Date(mController.getmStartDateTimeCalendar().getTimeInMillis()));
+        String endingTime = sdf.format(new Date(mController.getmEndDateTimeCalendar().getTimeInMillis()));
         
         mStartingDateButton.setText(startingDate);
         mStartingTimeButton.setText(startingTime);
@@ -364,44 +307,38 @@ public class ReserveRoomActivity extends Activity {
 	}
 	
 	private void fixDateTimes() {
-		if (mStartDateTimeCalendar.getTimeInMillis() > mEndDateTimeCalendar.getTimeInMillis()) {
+		if (mController.getmStartDateTimeCalendar().getTimeInMillis() > mController.getmEndDateTimeCalendar().getTimeInMillis()) {
 			Time inAnHour = new Time();
-	        inAnHour.set(mStartDateTimeCalendar.getTimeInMillis() + DateTimeHelpers.HOUR_IN_MILLISECONDS);
+	        inAnHour.set(mController.getmStartDateTimeCalendar().getTimeInMillis() + DateTimeHelpers.HOUR_IN_MILLISECONDS);
 	        inAnHour = DateTimeHelpers.nearestFifteenMinutes(inAnHour);
 	        
-	        mEndDateTimeCalendar.setTimeInMillis(inAnHour.toMillis(true));
-	        mEndDateTimeCalendar.set(Calendar.MILLISECOND, 0);
-			mEndDateTimeCalendar.set(Calendar.SECOND, 0);
+	        mController.getmEndDateTimeCalendar().setTimeInMillis(inAnHour.toMillis(true));
+	        mController.getmEndDateTimeCalendar().set(Calendar.MILLISECOND, 0);
+			mController.getmEndDateTimeCalendar().set(Calendar.SECOND, 0);
 		}
 	}
 	
 	private boolean isValidInput() {
-		boolean isValid = true;
-		String error = "";
-		
-		if (mTitleEditText.getText() == null || mTitleEditText.getText().toString().length() < 4) {
-			isValid = false;
-			error = getString(R.string.event_title_error);
+		boolean isValid = false;
+		validationResult eventValidation = mController.isReservationInfoValid(mTitleEditText.getText(),
+				mSelectedRoom, mGuestFragment.getHostEmail());
+		switch (eventValidation){
+			case VALIDATION_SUCCESS:
+				isValid = true;
+				break;
+			case EVENT_TITLE_VALIDATION_FAILURE:
+				AlertDialogHelper.buildAlertDialog(ReserveRoomActivity.this, getString(R.string.error), 
+						getString(R.string.event_title_error), getString(R.string.ok));
+				break;
+			case EVENT_ROOM_VALIDATION_FAILURE:
+				AlertDialogHelper.buildAlertDialog(ReserveRoomActivity.this, getString(R.string.error), 
+						getString(R.string.room_selection_error), getString(R.string.ok));
+				break;
+			case EVENT_EMAIL_VALIDATION_FAILURE:
+				AlertDialogHelper.buildAlertDialog(ReserveRoomActivity.this, getString(R.string.error), 
+						getString(R.string.host_email_error), getString(R.string.ok));
+				break;
 		}
-		
-		if (isValid) {
-			if (mSelectedRoom == null || mSelectedRoom.isEmpty()) {
-				isValid = false;
-				error = getString(R.string.room_selection_error);
-			}
-			
-			if (isValid) {
-				if (mGuestFragment.getHostEmail() == null || mGuestFragment.getHostEmail().isEmpty() || !PatternChecker.isValidEmail(mGuestFragment.getHostEmail())) {
-					isValid = false;
-					error = getString(R.string.host_email_error);
-				}
-			}
-		}
-		
-		if (!isValid) {
-			AlertDialogHelper.buildAlertDialog(ReserveRoomActivity.this, getString(R.string.error), error, getString(R.string.ok));
-		}
-		
 		return isValid;
 	}
 	
@@ -421,45 +358,10 @@ public class ReserveRoomActivity extends Activity {
 		
 		@Override
 		protected ArrayList<String> doInBackground(Void... params) {
-			if (mAppState.getCalendar() == null) {
+			if (mController.getApplicationState().getCalendar() == null) {
 				return null;
 			}
-			
-			try {
-				FreeBusyRequest request = new FreeBusyRequest();
-				
-				request.setTimeMin(new DateTime(new Date(mStartDateTimeCalendar.getTimeInMillis()), TimeZone.getTimeZone("UTC")));
-				request.setTimeMax(new DateTime(new Date(mEndDateTimeCalendar.getTimeInMillis()), TimeZone.getTimeZone("UTC")));
-				
-				//SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mAppState);
-				
-				ArrayList<FreeBusyRequestItem> fbri_list = new ArrayList<FreeBusyRequestItem>();
-				
-				for(String room : mAppState.getRooms()) {
-					fbri_list.add(new FreeBusyRequestItem().setId(mAppState.getNumberAddressedRooms().get(room).getResourceAddress()));
-				}
-				
-				request.setItems(fbri_list);
-				
-				FreeBusyResponse busyTimes = mAppState.getCalendar().freebusy().query(request).execute();
-				
-				ArrayList<String> freeRooms = new ArrayList<String>();
-				
-				for (Map.Entry<String, FreeBusyCalendar> busyCalendar : busyTimes.getCalendars().entrySet()) {
-					String room = busyCalendar.getKey();
-					
-					if (busyCalendar.getValue().getBusy().size() == 0) {
-						freeRooms.add(mAppState.getResourceAddressedRooms().get(room).getFullName());
-					}
-				}
-				
-				return freeRooms;
-			}
-			catch (Exception e) {
-				// TODO Intentionally left blank, but may need to handle errors later
-			}
-			
-			return null;
+			return mController.getFreeRooms();
 		}
 		
 		@Override
@@ -551,7 +453,7 @@ public class ReserveRoomActivity extends Activity {
 		@Override
 		protected Boolean doInBackground(Void... params) {
 			try {
-	    		if (mAppState.getCalendar() == null) {
+	    		if (mController.getApplicationState().getCalendar() == null) {
 	    			throw new Exception();
 	    		}
  	    	   	
@@ -559,9 +461,9 @@ public class ReserveRoomActivity extends Activity {
  	    	   	
  	    	   	mEvent.setSummary(mTitleEditText.getText().toString());
 	    	   	
-	    	   	Date startDate = new Date(mStartDateTimeCalendar.getTimeInMillis());
+	    	   	Date startDate = new Date(mController.getmStartDateTimeCalendar().getTimeInMillis());
 	    	   	
-	 	    	Date endDate = new Date(mEndDateTimeCalendar.getTimeInMillis());
+	 	    	Date endDate = new Date(mController.getmEndDateTimeCalendar().getTimeInMillis());
 	 	    	
 	 	    	mEvent.setStart(new EventDateTime().setDateTime(new DateTime(startDate, TimeZone.getTimeZone("UTC"))));
 	 	    	mEvent.setEnd(new EventDateTime().setDateTime(new DateTime(endDate, TimeZone.getTimeZone("UTC"))));
@@ -579,7 +481,7 @@ public class ReserveRoomActivity extends Activity {
  	    	   	
 
  	    	   	mEvent.setLocation(mSelectedRoom);
-	    	   	attendees.add(new EventAttendee().setEmail(mAppState.getNumberAddressedRooms().get(mSelectedRoom).getResourceAddress()));
+	    	   	attendees.add(new EventAttendee().setEmail(mController.getApplicationState().getNumberAddressedRooms().get(mSelectedRoom).getResourceAddress()));
  	    	   	
     	    	EventAttendee creator = new EventAttendee();
     	    	creator.setEmail(mGuestFragment.getHostEmail());
@@ -609,7 +511,7 @@ public class ReserveRoomActivity extends Activity {
  	    	   	// Attempt to create the event 5 times
  	    	   	for (int tries = 0; tries < 5; tries++) {
 	 	    	   	try {
-	 	    	   		createdEvent = mAppState.getCalendar().events().insert("primary", mEvent).execute();
+	 	    	   		createdEvent = mController.getApplicationState().getCalendar().events().insert("primary", mEvent).execute();
 	 	    	   		mEvent = createdEvent;
 	 	    	   		return true;
 	 	    	   	}
@@ -664,7 +566,7 @@ public class ReserveRoomActivity extends Activity {
 		@Override
 		protected Boolean doInBackground(Event... params) {
 			try {
-	    		if (mAppState.getCalendar() == null) {
+	    		if (mController.getApplicationState().getCalendar() == null) {
 	    			throw new Exception();
 	    		}
 	    		
@@ -683,11 +585,11 @@ public class ReserveRoomActivity extends Activity {
 				//SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mAppState);
 				
 				request.setItems(Arrays.asList(
-					    new FreeBusyRequestItem().setId(mAppState.getNumberAddressedRooms().get(mEvent.getLocation()).getResourceAddress())));
+					    new FreeBusyRequestItem().setId(mController.getApplicationState().getNumberAddressedRooms().get(mEvent.getLocation()).getResourceAddress())));
 				
 				FreeBusyResponse busyTimes;
 				
-				busyTimes = mAppState.getCalendar().freebusy().query(request).execute();
+				busyTimes = mController.getApplicationState().getCalendar().freebusy().query(request).execute();
 				
 				ArrayList<String> freeRooms = new ArrayList<String>();
 				
@@ -695,7 +597,7 @@ public class ReserveRoomActivity extends Activity {
 					String room = busyCalendar.getKey();
 					
 					if (busyCalendar.getValue().getBusy().size() == 0) {
-						freeRooms.add(mAppState.getResourceAddressedRooms().get(room).getFullName());
+						freeRooms.add(mController.getApplicationState().getResourceAddressedRooms().get(room).getFullName());
 					}
 				}
 				
@@ -703,7 +605,7 @@ public class ReserveRoomActivity extends Activity {
 					Event event = null;
 					
 					try {
-						event = mAppState.getCalendar().events().get("primary", mEvent.getId()).execute();
+						event = mController.getApplicationState().getCalendar().events().get("primary", mEvent.getId()).execute();
 						
 						if (event != null && event.getSummary().equals(mEvent.getSummary())) {
 							return true;
@@ -756,7 +658,7 @@ public class ReserveRoomActivity extends Activity {
 		    	alert.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int which) {
 						ReserveRoomActivity.this.finish();
-						mAppState.getMainActivity().restartCalendarFragmentEventsUpdater();
+						mController.getApplicationState().getMainActivity().restartCalendarFragmentEventsUpdater();
 					}
 				});
 		    	alert.show();
@@ -775,7 +677,7 @@ public class ReserveRoomActivity extends Activity {
 			
 			if (quickReservation) {
 				//setTitle(getString(R.string.quick_reservation_label));
-				setTitle(mAppState.getTitle() + " - " + getString(R.string.quick_reservation_label));
+				setTitle(this.mController.getApplicationState().getTitle() + " - " + getString(R.string.quick_reservation_label));
 				
 				mTitleEditText.setText(getString(R.string.quick_reservation));
 				//mTitleEditText.setEnabled(false);
@@ -816,5 +718,10 @@ public class ReserveRoomActivity extends Activity {
 				mSelectedRoom = null;
 			}
 		}
+	}
+
+	public void onTaskCompleted(Void result) {
+		// TODO Auto-generated method stub
+		
 	}
 }

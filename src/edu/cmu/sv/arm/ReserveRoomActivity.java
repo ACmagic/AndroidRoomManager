@@ -48,7 +48,7 @@ import com.google.api.services.calendar.model.FreeBusyRequest;
 import com.google.api.services.calendar.model.FreeBusyRequestItem;
 import com.google.api.services.calendar.model.FreeBusyResponse;
 
-public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteListener<Void> {	
+public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteListener<Boolean> {	
 	private TextView mTitleBarTextView;
 	private EditText mTitleEditText;
 	private Button mStartingDateButton;
@@ -71,6 +71,7 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
 	
 	private AvailableRoomsTask mART;
 	private ReserveRoomController mController;
+	private ProgressDialog mDialog;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -139,9 +140,12 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
 	    switch (item.getItemId()) {
 	    case R.id.reserveRoomButton:
 	    	if (isValidInput()) {
-	    		CalendarScheduleTask cst = new CalendarScheduleTask();
+	    		mDialog = new ProgressDialog(ReserveRoomActivity.this);
+	    		mDialog.setMessage(getString(R.string.reserving_room_please_wait));
+	    		mDialog.show();
 	    		
-	    		cst.execute();
+	    		mController.execute(mTitleEditText.getText().toString(), mDescriptionEditText.getText().toString(),
+	    				mSelectedRoom, mGuestFragment.getHostEmail(), mGuestFragment.getGuests());
 	    	}
 	    	return true;
 	    case android.R.id.home:
@@ -432,243 +436,6 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
 		}
 	}
 	
-	private class CalendarScheduleTask extends AsyncTask<Void, Void, Boolean> {
-		private ProgressDialog mDialog;
-		private Event mEvent;
-		
-		// attempts to schedule a calendar event
-    	// Arguments:
-    	// [0] - event title
-    	// [1] - event starting date
-    	// [2] - event starting time
-    	// [3] - event ending date
-    	// [4] - event ending time
-        // [5] - host/creator/organizer
-    	// [6] - description
-    	// [7] - guests can modify event?
-        // [8] - guests can invite others?
-        // [9] - guests can see guest list?
-    	// [10] - room/location
-    	// [11...] - guests
-		@Override
-		protected Boolean doInBackground(Void... params) {
-			try {
-	    		if (mController.getApplicationState().getCalendar() == null) {
-	    			throw new Exception();
-	    		}
- 	    	   	
- 	    	   	mEvent = new Event();
- 	    	   	
- 	    	   	mEvent.setSummary(mTitleEditText.getText().toString());
-	    	   	
-	    	   	Date startDate = new Date(mController.getmStartDateTimeCalendar().getTimeInMillis());
-	    	   	
-	 	    	Date endDate = new Date(mController.getmEndDateTimeCalendar().getTimeInMillis());
-	 	    	
-	 	    	mEvent.setStart(new EventDateTime().setDateTime(new DateTime(startDate, TimeZone.getTimeZone("UTC"))));
-	 	    	mEvent.setEnd(new EventDateTime().setDateTime(new DateTime(endDate, TimeZone.getTimeZone("UTC"))));
- 	    	   	
-	 	    	// Argument 5 (owner/creator) moved below
-	 	    	
- 	    	   	mEvent.setDescription(mDescriptionEditText.getText().toString());
-
- 	    	   	mEvent.setGuestsCanModify(true);
- 	    	   	mEvent.setGuestsCanInviteOthers(true);
-	   			mEvent.setGuestsCanSeeOtherGuests(true);
- 	    	   
- 	    	   	LinkedList<EventAttendee> attendees = new LinkedList<EventAttendee>();
- 	    	   	//SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mAppState);
- 	    	   	
-
- 	    	   	mEvent.setLocation(mSelectedRoom);
-	    	   	attendees.add(new EventAttendee().setEmail(mController.getApplicationState().getNumberAddressedRooms().get(mSelectedRoom).getResourceAddress()));
- 	    	   	
-    	    	EventAttendee creator = new EventAttendee();
-    	    	creator.setEmail(mGuestFragment.getHostEmail());
-    	    	creator.setResponseStatus("needsAction");
-    	    	
-    	   		attendees.add(creator);
-    	   		
-    	   		mEvent.setCreator(new EventCreator().setEmail(mGuestFragment.getHostEmail()));
-    	   		mEvent.setOrganizer(new EventOrganizer().setEmail(mGuestFragment.getHostEmail()));
- 	    	   	
- 	    	   	// Add the rest of the attendees
- 	    	   	for (int i = 0; i < mGuestFragment.getGuests().size(); i++) {
- 	    	   		EventAttendee attendee = new EventAttendee();
- 	    	   		attendee.setEmail(mGuestFragment.getGuests().get(i));
- 	    	   		attendee.setResponseStatus("needsAction");
- 	    	   		
- 	    	   		attendees.add(attendee);
- 	    	   	}
- 	    	   	
- 	    	   	mEvent.setAttendees(attendees);
- 	    	   	
- 	    	   	mEvent.set("sendNotifications", true);
- 	    	   	
- 	    	   	Event createdEvent = new Event();
- 	    	   	createdEvent.clear();
- 	    	   	
- 	    	   	// Attempt to create the event 5 times
- 	    	   	for (int tries = 0; tries < 5; tries++) {
-	 	    	   	try {
-	 	    	   		createdEvent = mController.getApplicationState().getCalendar().events().insert("primary", mEvent).execute();
-	 	    	   		mEvent = createdEvent;
-	 	    	   		return true;
-	 	    	   	}
-	 	    	   	catch (GoogleJsonResponseException e) {
-						if (e.getDetails().code == 503) {
-							continue;
-						}
-						
-						break;
-	 	    	   	}
- 	    	   	}
- 	    	   	
- 	    	   	return false;
-	    	}
-			catch (Exception e) {
-				return false;
-			}
-		}
-		
-		@Override
-    	protected void onPreExecute() {
-    		super.onPreExecute();
-    		
-    		mDialog = new ProgressDialog(ReserveRoomActivity.this);
-    		mDialog.setMessage(getString(R.string.reserving_room_please_wait));
-    		mDialog.show();
-    	}
-		
-		@Override
-    	protected void onPostExecute(Boolean result) {
-    		super.onPostExecute(result);
-		    
-		    if (mDialog.isShowing()) {
-    			mDialog.dismiss();
-    		}
-		    
-		    if (result != null && result) {
-		    	ScheduledEventVerifier sev = new ScheduledEventVerifier();
-		    	
-		    	sev.execute(mEvent);
-		    }
-		    else {
-		    	AlertDialogHelper.buildAlertDialog(ReserveRoomActivity.this, getString(R.string.error), getString(R.string.there_has_been_an_exception), getString(R.string.ok));
-		    }
-    	}
-	}
-	
-	private class ScheduledEventVerifier extends AsyncTask<Event, Void, Boolean> {
-		private ProgressDialog mDialog;
-		private Event mEvent;
-		
-		@Override
-		protected Boolean doInBackground(Event... params) {
-			try {
-	    		if (mController.getApplicationState().getCalendar() == null) {
-	    			throw new Exception();
-	    		}
-	    		
-	    		if (params[0] != null) {
-	    			mEvent = params[0];
-	    		}
-	    		else {
-					return false;
-	    		}
- 	    	   	
-		    	FreeBusyRequest request = new FreeBusyRequest();
-				
-				request.setTimeMin(mEvent.getStart().getDateTime());
-				request.setTimeMax(mEvent.getEnd().getDateTime());
-				
-				//SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mAppState);
-				
-				request.setItems(Arrays.asList(
-					    new FreeBusyRequestItem().setId(mController.getApplicationState().getNumberAddressedRooms().get(mEvent.getLocation()).getResourceAddress())));
-				
-				FreeBusyResponse busyTimes;
-				
-				busyTimes = mController.getApplicationState().getCalendar().freebusy().query(request).execute();
-				
-				ArrayList<String> freeRooms = new ArrayList<String>();
-				
-				for (Map.Entry<String, FreeBusyCalendar> busyCalendar : busyTimes.getCalendars().entrySet()) {
-					String room = busyCalendar.getKey();
-					
-					if (busyCalendar.getValue().getBusy().size() == 0) {
-						freeRooms.add(mController.getApplicationState().getResourceAddressedRooms().get(room).getFullName());
-					}
-				}
-				
-				if (freeRooms.isEmpty()) {
-					Event event = null;
-					
-					try {
-						event = mController.getApplicationState().getCalendar().events().get("primary", mEvent.getId()).execute();
-						
-						if (event != null && event.getSummary().equals(mEvent.getSummary())) {
-							return true;
-						}
-					}
-					catch (Exception e) {
-						// OK to do nothing here
-					}
-				}
-
-				return null;	// TODO: this should be false, but need to make sure that it is actually triggered whenever necessary
-	    	}
-			catch (Exception e) {
-				return null;
-			}
-		}
-		
-		@Override
-    	protected void onPreExecute() {
-    		super.onPreExecute();
-    		
-    		mDialog = new ProgressDialog(ReserveRoomActivity.this);
-    		mDialog.setMessage(getString(R.string.validating_reservation));
-    		mDialog.show();
-    	}
-		
-		@Override
-    	protected void onPostExecute(Boolean result) {
-    		super.onPostExecute(result);
-		    
-		    if (mDialog.isShowing()) {
-    			mDialog.dismiss();
-    		}
-		    
-		    AlertDialog.Builder alert = new AlertDialog.Builder(ReserveRoomActivity.this);
-		    
-		    if (result == null) {
-		    	alert.setTitle(getString(R.string.error));
-		    	alert.setMessage(getString(R.string.unable_to_verify_reservation));
-		    	alert.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int which) {
-						ReserveRoomActivity.this.finish();
-					}
-				});
-		    	alert.show();
-		    }
-		    else if (result) {
-		    	alert.setTitle(getString(R.string.notice));
-		    	alert.setMessage(getString(R.string.room_reserved));
-		    	alert.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int which) {
-						ReserveRoomActivity.this.finish();
-						mController.getApplicationState().getMainActivity().restartCalendarFragmentEventsUpdater();
-					}
-				});
-		    	alert.show();
-		    }
-		    else {
-		    	AlertDialogHelper.buildAlertDialog(ReserveRoomActivity.this, getString(R.string.error), getString(R.string.reservation_failed), getString(R.string.ok));
-		    }
-    	}
-	}
-	
 	private void checkForQuickReservation() {
 		Bundle extras = getIntent().getExtras(); 
 		
@@ -676,21 +443,9 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
 			boolean quickReservation = extras.getBoolean("quickReservation");
 			
 			if (quickReservation) {
-				//setTitle(getString(R.string.quick_reservation_label));
 				setTitle(this.mController.getApplicationState().getTitle() + " - " + getString(R.string.quick_reservation_label));
-				
-				mTitleEditText.setText(getString(R.string.quick_reservation));
-				//mTitleEditText.setEnabled(false);
-				
+				mTitleEditText.setText(getString(R.string.quick_reservation));				
 				mDescriptionEditText.setText(getString(R.string.reserved_via_arm));
-				//mDescriptionEditText.setEnabled(false);
-				
-				//mStartingDateButton.setEnabled(false);
-				//mStartingTimeButton.setEnabled(false);
-				
-				//mEndingDateButton.setEnabled(false);
-				//mEndingTimeButton.setEnabled(false);
-				
 				mGuestFragment.setFocusOnHostEmail();
 			}
 		}
@@ -720,8 +475,36 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
 		}
 	}
 
-	public void onTaskCompleted(Void result) {
-		// TODO Auto-generated method stub
+	public void onTaskCompleted(Boolean result) {
+		if (mDialog.isShowing()) {
+			mDialog.dismiss();
+		}
 		
+		AlertDialog.Builder alert = new AlertDialog.Builder(ReserveRoomActivity.this);
+	    
+	    if (result == null) {
+	    	alert.setTitle(getString(R.string.error));
+	    	alert.setMessage(getString(R.string.unable_to_verify_reservation));
+	    	alert.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					ReserveRoomActivity.this.finish();
+				}
+			});
+	    	alert.show();
+	    }
+	    else if (result) {
+	    	alert.setTitle(getString(R.string.notice));
+	    	alert.setMessage(getString(R.string.room_reserved));
+	    	alert.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					ReserveRoomActivity.this.finish();
+					mController.getApplicationState().getMainActivity().restartCalendarFragmentEventsUpdater();
+				}
+			});
+	    	alert.show();
+	    }
+	    else {
+	    	AlertDialogHelper.buildAlertDialog(ReserveRoomActivity.this, getString(R.string.error), getString(R.string.reservation_failed), getString(R.string.ok));
+	    }
 	}
 }

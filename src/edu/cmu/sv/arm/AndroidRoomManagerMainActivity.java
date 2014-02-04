@@ -79,9 +79,7 @@ public class AndroidRoomManagerMainActivity extends Activity implements AsyncTas
     @Override
     public void onResume() {
     	super.onResume();
-    	
-    	//startGoogleAuthTokenUpdater();
-    	setupApplicationResetter();
+       	setupApplicationResetter();
     }
     
     @Override

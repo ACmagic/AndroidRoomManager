@@ -8,15 +8,18 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import edu.cmu.sv.arm.StartActivityController.ConfigurationStatus;
 
 public class StartActivity extends Activity implements AsyncTaskCompleteListener<ConfigurationStatus> {
 	private Button mStartButton;
 	
 	private TextView mStatusTextView;
 	private ScrollView mStatusScrollView;
+	private StartActivityController mController = null;
 		
 	@Override
     public void onCreate(Bundle savedInstanceState) {
+		mController = new StartActivityController(this.getApplication(), this);
         super.onCreate(savedInstanceState);
         
         setContentView(R.layout.start);
@@ -51,19 +54,11 @@ public class StartActivity extends Activity implements AsyncTaskCompleteListener
 		
 		mStartButton.setEnabled(false);
 		mStatusTextView.setText("> Setting up application state...");
-		resetApplicationState();
-        configureApplication();
-	}
+		mController.resetApplicationState();
 
-	private void resetApplicationState() {
-		//Check this!
-		new StartActivityController(this.getApplication(), null).resetApplicationState();
+		// configure application
+		mController.execute();
 	}
-
-	private void configureApplication(){
-		new StartActivityController(this.getApplication(), this).execute();
-	}
-	
 	
 	@Override
 	public void onPause() {

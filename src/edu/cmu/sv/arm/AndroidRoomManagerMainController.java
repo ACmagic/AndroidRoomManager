@@ -18,11 +18,10 @@ public class AndroidRoomManagerMainController extends AsyncTask <Void, Void, Voi
 	private CalendarProvider mCalendar = null;
 	private ContactsProvider mContactsProvider;
 	
-	public AndroidRoomManagerMainController(AndroidRoomManagerMainActivity app, AsyncTaskCompleteListener callback,
-			String appName) {
+	public AndroidRoomManagerMainController(AndroidRoomManagerMainActivity app, String appName) {
 		mAppState = ((ARM) app.getApplication());
 		mAppState.setMainActivity(app);
-		mCallback = callback;
+		mCallback = app;
 		mCalendar = new CalendarProvider(app, this, mAppState, appName);	
 	}
 	

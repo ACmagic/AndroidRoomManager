@@ -55,7 +55,7 @@ public class AndroidRoomManagerMainActivity extends Activity implements AsyncTas
         showLoadingDialog();
 
         // Check arguments!
-        mController = new AndroidRoomManagerMainController(this, this, getString(R.string.app_name_extended));
+        mController = new AndroidRoomManagerMainController(this, getString(R.string.app_name_extended));
 
         configurePreferences();
         

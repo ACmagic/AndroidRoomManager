@@ -16,9 +16,7 @@ import android.media.MediaScannerConnection.OnScanCompletedListener;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
-
-enum ConfigurationStatus {USING_CUSTOM_SETTINGS_FILE, USING_DEFAULT_SETTINGS_FILE,
-	READ_MEDIA_ERROR, UNEXPECTED_ERROR}
+import edu.cmu.sv.arm.StartActivityController.ConfigurationStatus;
 
 public class StartActivityController extends AsyncTask <Void, Void, ConfigurationStatus>{
 	private ARM mAppState;
@@ -26,7 +24,9 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 	private Application mApplication; 
 	private AsyncTaskCompleteListener<ConfigurationStatus> mTaskCompletedCallback;
 	
-	
+	public enum ConfigurationStatus {USING_CUSTOM_SETTINGS_FILE, USING_DEFAULT_SETTINGS_FILE,
+		READ_MEDIA_ERROR, UNEXPECTED_ERROR}
+
 	public StartActivityController(Application app, AsyncTaskCompleteListener<ConfigurationStatus> callback)
 	{
 		this.mApplication = app;
@@ -53,111 +53,106 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 			// Read configuration file
 			String externalStorageState = Environment.getExternalStorageState();
 	    	
-	    	if (Environment.MEDIA_MOUNTED.equals(externalStorageState) || Environment.MEDIA_MOUNTED_READ_ONLY.equals(externalStorageState)) {
-	    		
-	    		// We can read and write the media ||  We can only read the media
-	    		String filePath = Environment.getExternalStorageDirectory() + "/" + "ARM";
-	    		
-	    		File directory = new File(filePath);
-	    		File settingsFile = new File(filePath, "arm_settings.xml");
-	    		File sampleSettingsFile = new File(filePath, "arm_settings_sample.xml");
-	    			
-				if (settingsFile.exists()) {
-	    			parseXML(new FileInputStream(settingsFile));
+	    	if (Environment.MEDIA_MOUNTED.equals(externalStorageState) || 
+	    			Environment.MEDIA_MOUNTED_READ_ONLY.equals(externalStorageState)) {
+	    		if(parseConfiguration() == true){
 					return ConfigurationStatus.USING_CUSTOM_SETTINGS_FILE;
 				}
-				else {
-					loadWithDefaultSettings(externalStorageState, directory,
-							sampleSettingsFile);
-					return ConfigurationStatus.USING_DEFAULT_SETTINGS_FILE;
+				else
+				{
+					return ConfigurationStatus.READ_MEDIA_ERROR;
 				}
 	    	}
 	    	else
 	    	{
-	    		parseXML(mApplication.getResources().getAssets().open("arm_settings_empty.xml"));
 	    		return ConfigurationStatus.READ_MEDIA_ERROR;
 	    	}
-		} catch (Exception e) {
-			try {
-				parseXML(mApplication.getResources().getAssets().open("arm_settings_empty.xml"));
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (Exception e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+		}		
+	     catch (Exception e) {
 			return ConfigurationStatus.UNEXPECTED_ERROR;
 		}
 	}
 	
-	public void parseXML(InputStream armSettingsInputStream) throws Exception {
-		XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-		XmlPullParser parser = factory.newPullParser(); 
-		parser.setInput(armSettingsInputStream, "UTF-8");
+	public boolean parseConfiguration() throws Exception {
+		// We can read and write the media ||  We can only read the media
+		String filePath = Environment.getExternalStorageDirectory() + "/" + "ARM";
 		
-		int eventType = parser.getEventType();
+		File settingsFile = new File(filePath, "arm_settings.xml");
+		if (settingsFile.exists()){
 		
-		String currentBuildingNumber = null;
-		Room currentRoom = null;
-		
-		while (eventType != XmlPullParser.END_DOCUMENT) {
-			String tagName = null;
+			XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+			XmlPullParser parser = factory.newPullParser(); 
+			parser.setInput(new FileInputStream(settingsFile), "UTF-8");
 			
-			switch (eventType) {
-			case XmlPullParser.START_TAG:
-				tagName = parser.getName().toLowerCase();
+			int eventType = parser.getEventType();
+			
+			String currentBuildingNumber = null;
+			Room currentRoom = null;
+			
+			while (eventType != XmlPullParser.END_DOCUMENT) {
+				String tagName = null;
 				
-				int numAttrs = parser.getAttributeCount();
-				
-				if (tagName.equals("room")) {
-					currentRoom = new Room();
-					currentRoom.setBuilding(currentBuildingNumber);
-				}
-				
-				for (int i = 0; i < numAttrs; i++) {
-					String attrName = parser.getAttributeName(i);
-					String attrValue = parser.getAttributeValue(i);
+				switch (eventType) {
+				case XmlPullParser.START_TAG:
+					tagName = parser.getName().toLowerCase();
 					
-					if (tagName.equals("application")) {
-						parseApplicationInfo(attrName, attrValue);
-					}
-					else if (tagName.equals("building")) {
-						currentBuildingNumber = parseBuildingInfo(
-								currentBuildingNumber, attrName, attrValue);
-					}
-					else if (tagName.equals("room")) {
-						parseRoomInfo(currentRoom, attrName, attrValue);
-					}
-				}
-				break;
-			case XmlPullParser.END_TAG:
-				tagName = parser.getName();
-				
-				if (tagName.equals("room")) {
-					mAppState.addRoom(currentRoom);
+					int numAttrs = parser.getAttributeCount();
 					
-					if (currentRoom.isDefault()) {
-						mAppState.setDefaultRoom(currentRoom);
+					if (tagName.equals("room")) {
+						currentRoom = new Room();
+						currentRoom.setBuilding(currentBuildingNumber);
 					}
 					
-					//addLineToStatus("Parsed " + currentRoom.getFullName() + ".");
+					for (int i = 0; i < numAttrs; i++) {
+						String attrName = parser.getAttributeName(i);
+						String attrValue = parser.getAttributeValue(i);
+						
+						if (tagName.equals("application")) {
+							parseApplicationInfo(attrName, attrValue);
+						}
+						else if (tagName.equals("building")) {
+							currentBuildingNumber = parseBuildingInfo(
+									currentBuildingNumber, attrName, attrValue);
+						}
+						else if (tagName.equals("room")) {
+							parseRoomInfo(currentRoom, attrName, attrValue);
+						}
+					}
+					break;
+				case XmlPullParser.END_TAG:
+					tagName = parser.getName();
+					
+					if (tagName.equals("room")) {
+						mAppState.addRoom(currentRoom);
+						
+						if (currentRoom.isDefault()) {
+							mAppState.setDefaultRoom(currentRoom);
+						}
+						
+						//addLineToStatus("Parsed " + currentRoom.getFullName() + ".");
+					}
+					break;
+				default:
+					break;
 				}
-				break;
-			default:
-				break;
+				
+				eventType = parser.next();
 			}
 			
-			eventType = parser.next();
+			if (mAppState.getDefaultRoom() != null) {
+		    	mAppState.setCurrentRoom(mAppState.getDefaultRoom());
+		    }
+		    else {
+		    	mAppState.setCurrentRoom(mAppState.getNumberAddressedRooms().elements().nextElement());
+		    	mAppState.setDefaultRoom(mAppState.getCurrentRoom());
+		    }
+			return true;
+		}
+		else
+		{
+			return false;
 		}
 		
-		if (mAppState.getDefaultRoom() != null) {
-	    	mAppState.setCurrentRoom(mAppState.getDefaultRoom());
-	    }
-	    else {
-	    	mAppState.setCurrentRoom(mAppState.getNumberAddressedRooms().elements().nextElement());
-	    	mAppState.setDefaultRoom(mAppState.getCurrentRoom());
-	    }
 	}
 
 	private void parseRoomInfo(Room currentRoom, String attrName,
@@ -210,85 +205,6 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 				mAppState.setCalendarRefreshDelaySeconds(value);
 			}
 		}
-	}
-	
-	private void loadWithDefaultSettings(String externalStorageState,
-			File directory, File sampleSettingsFile) throws Exception,
-			IOException, FileNotFoundException {
-		if (directory.exists() && directory.isDirectory()) {
-			loadFromExistingDirectory(externalStorageState, sampleSettingsFile);
-		}
-		else {
-			loadInNewDirectory(externalStorageState, directory,
-					sampleSettingsFile);
-		}
-	}
-	
-	private void loadInNewDirectory(String externalStorageState,
-			File directory, File sampleSettingsFile) throws IOException,
-			FileNotFoundException, Exception {
-		if (Environment.MEDIA_MOUNTED.equals(externalStorageState)) {
-			if (directory.mkdirs()) {
-				createSampleFileWithDefaults(sampleSettingsFile);
-			}
-			else {
-				parseXML(mApplication.getResources().getAssets().open("arm_settings_empty.xml"));
-			}
-		}
-		else {
-			parseXML(mApplication.getResources().getAssets().open("arm_settings_empty.xml"));
-		}
-	}
-
-	private void loadFromExistingDirectory(String externalStorageState,
-			File sampleSettingsFile) throws Exception, IOException,
-			FileNotFoundException {
-		if (sampleSettingsFile.exists()) {
-			parseXML(mApplication.getResources().getAssets().open("arm_settings_empty.xml"));
-		}
-		else {
-			if (Environment.MEDIA_MOUNTED.equals(externalStorageState)) {
-				createSampleFileWithDefaults(sampleSettingsFile);
-			}
-			else {
-				parseXML(mApplication.getResources().getAssets().open("arm_settings_empty.xml"));
-			}
-		}
-	}
-
-	private void createSampleFileWithDefaults(File sampleSettingsFile)
-			throws IOException, FileNotFoundException {
-		InputStream sampleSettingsInputStream = mApplication.getResources().getAssets().open("arm_settings_sample.xml");
-		
-		FileOutputStream sampleSettingsFileOutputStream = new FileOutputStream(sampleSettingsFile);
-		
-		byte[] buffer = new byte[1024];
-		int readLength = 0;
-		
-		while ((readLength = sampleSettingsInputStream.read(buffer)) > 0) {
-			sampleSettingsFileOutputStream.write(buffer, 0, readLength);
-		}
-		
-		sampleSettingsFileOutputStream.close();
-		
-		scanFile(sampleSettingsFile);
-	}
-
-	private void scanFile(File sampleSettingsFile) {
-		MediaScannerConnection.scanFile(mApplication.getApplicationContext(), new String[] {sampleSettingsFile.getPath()}, null, new OnScanCompletedListener() {
-			public void onScanCompleted(String path, Uri uri) {
-				// Think about this error management
-				try {
-					parseXML(mApplication.getResources().getAssets().open("arm_settings_empty.xml"));
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		});
 	}
 
 	@Override

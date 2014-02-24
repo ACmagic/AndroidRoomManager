@@ -73,12 +73,6 @@ public class StartActivity extends Activity implements AsyncTaskCompleteListener
 			Intent armMain = new Intent(getBaseContext(), AndroidRoomManagerMainActivity.class);
 			startActivity(armMain);
 		}
-		else if (application_configuration_status == ConfigurationStatus.USING_DEFAULT_SETTINGS_FILE){
-		
-			// Do we actually want to load with default settings? Is it there any value?
-			displayMessageInStatusView("Using default settings file");
-			mStartButton.setEnabled(true);  
-		}
 		else
 		{
 			// Should we close the app if no configuration is there?

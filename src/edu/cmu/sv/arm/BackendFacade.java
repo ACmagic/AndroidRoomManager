@@ -11,7 +11,11 @@ import javax.net.ssl.HttpsURLConnection;
 public class BackendFacade {
 	
 	//Read from configuration
-	private String endpoint = "";
+	private String endpoint;
+	
+	public BackendFacade(String endpoint){
+		this.endpoint = endpoint;
+	}
 	
 	//Check if String as parameter is enough
 	public String getResourceInfo(String data){

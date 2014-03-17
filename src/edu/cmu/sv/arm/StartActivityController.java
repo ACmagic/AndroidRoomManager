@@ -30,21 +30,21 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 	public StartActivityController(Application app, AsyncTaskCompleteListener<ConfigurationStatus> callback)
 	{
 		this.mApplication = app;
-		this.mAppState = ((ARM) app);
+		this.mAppState = (ARM) app;
 		this.mTaskCompletedCallback = callback;
 	}
 	
 	public void resetApplicationState(){
-		if (mAppState.getRooms() != null) {
-        	mAppState.getRooms().clear();
+		if (getAppState().getRooms() != null) {
+        	getAppState().getRooms().clear();
         }
         
-        if (mAppState.getNumberAddressedRooms() != null) {
-        	mAppState.getNumberAddressedRooms().clear();
+        if (getAppState().getNumberAddressedRooms() != null) {
+        	getAppState().getNumberAddressedRooms().clear();
         }
         
-        if (mAppState.getResourceAddressedRooms() != null) {
-        	mAppState.getResourceAddressedRooms().clear();
+        if (getAppState().getResourceAddressedRooms() != null) {
+        	getAppState().getResourceAddressedRooms().clear();
         }
 	}
 	
@@ -73,11 +73,15 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 		}
 	}
 	
+	public File getConfigurationFile(){
+		String filePath = Environment.getExternalStorageDirectory() + "/" + "ARM";
+		File settingsFile = new File(filePath, "arm_settings.xml");
+		return settingsFile;
+	}
+	
 	public boolean parseConfiguration() throws Exception {
 		// We can read and write the media ||  We can only read the media
-		String filePath = Environment.getExternalStorageDirectory() + "/" + "ARM";
-		
-		File settingsFile = new File(filePath, "arm_settings.xml");
+		File settingsFile = getConfigurationFile();
 		if (settingsFile.exists()){
 		
 			XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
@@ -88,7 +92,6 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 			
 			String currentBuildingNumber = null;
 			Room currentRoom = null;
-			
 			while (eventType != XmlPullParser.END_DOCUMENT) {
 				String tagName = null;
 				
@@ -97,12 +100,10 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 					tagName = parser.getName().toLowerCase();
 					
 					int numAttrs = parser.getAttributeCount();
-					
 					if (tagName.equals("room")) {
 						currentRoom = new Room();
 						currentRoom.setBuilding(currentBuildingNumber);
 					}
-					
 					for (int i = 0; i < numAttrs; i++) {
 						String attrName = parser.getAttributeName(i);
 						String attrValue = parser.getAttributeValue(i);
@@ -121,12 +122,11 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 					break;
 				case XmlPullParser.END_TAG:
 					tagName = parser.getName();
-					
 					if (tagName.equals("room")) {
-						mAppState.addRoom(currentRoom);
+						getAppState().addRoom(currentRoom);
 						
 						if (currentRoom.isDefault()) {
-							mAppState.setDefaultRoom(currentRoom);
+							getAppState().setDefaultRoom(currentRoom);
 						}
 						
 						//addLineToStatus("Parsed " + currentRoom.getFullName() + ".");
@@ -139,12 +139,12 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 				eventType = parser.next();
 			}
 			
-			if (mAppState.getDefaultRoom() != null) {
-		    	mAppState.setCurrentRoom(mAppState.getDefaultRoom());
+			if (getAppState().getDefaultRoom() != null) {
+		    	getAppState().setCurrentRoom(getAppState().getDefaultRoom());
 		    }
 		    else {
-		    	mAppState.setCurrentRoom(mAppState.getNumberAddressedRooms().elements().nextElement());
-		    	mAppState.setDefaultRoom(mAppState.getCurrentRoom());
+		    	getAppState().setCurrentRoom(getAppState().getNumberAddressedRooms().elements().nextElement());
+		    	getAppState().setDefaultRoom(getAppState().getCurrentRoom());
 		    }
 			return true;
 		}
@@ -181,28 +181,30 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 
 	private void parseApplicationInfo(String attrName, String attrValue) {
 		if (attrName.equals("title")) {
-			mAppState.setTitle(attrValue);
+			getAppState().setTitle(attrValue);
 		}							
 		else if (attrName.equals("google_calendar_api_key")) {
-			mAppState.setGoogleCalendarAPIKey(attrValue);
+			getAppState().setGoogleCalendarAPIKey(attrValue);
 		}
 		else if (attrName.equals("google_account")) {
-			mAppState.setGoogleAccountName(attrValue);
+			getAppState().setGoogleAccountName(attrValue);
+		}
+		else if (attrName.equals("endpoint")) {
+			getAppState().setEndpoint(attrValue);
 		}
 		else {
 			int value = Integer.parseInt(attrValue);
-			
 			if (attrName.equals("timeout_minutes")) {
-				mAppState.setApplicationTimeoutMinutes(value);
+				getAppState().setApplicationTimeoutMinutes(value);
 			}
 			else if (attrName.equals("timeout_seconds")) {
-				mAppState.setApplicationTimeoutSeconds(value);
+				getAppState().setApplicationTimeoutSeconds(value);
 			}
 			else if (attrName.equals("calendar_refresh_delay_minutes")) {
-				mAppState.setCalendarRefreshDelayMinutes(value);
+				getAppState().setCalendarRefreshDelayMinutes(value);
 			}
 			else if (attrName.equals("calendar_refresh_delay_seconds")) {
-				mAppState.setCalendarRefreshDelaySeconds(value);
+				getAppState().setCalendarRefreshDelaySeconds(value);
 			}
 		}
 	}
@@ -217,7 +219,10 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 		super.onPostExecute(configurationStatus);
 		this.mTaskCompletedCallback.onTaskCompleted(configurationStatus);
 	}
-	
+
+	public ARM getAppState() {
+		return mAppState;
+	}
 	
 }
 

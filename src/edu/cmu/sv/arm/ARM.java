@@ -32,6 +32,7 @@ public class ARM extends Application {
 	private Room mDefaultRoom = null;
 	
 	private String mTitle;
+	private String mEndpoint;
 	
 	private InputStream mArmSettingsInputStream = null;
 	
@@ -169,5 +170,13 @@ public class ARM extends Application {
 	
 	public void setArmSettingsInputStream(InputStream armSettingsInputStream) {
 		mArmSettingsInputStream = armSettingsInputStream;
+	}
+
+	public String getEndpoint() {
+		return mEndpoint;
+	}
+
+	public void setEndpoint(String endpoint) {
+		mEndpoint = endpoint;
 	}
 }

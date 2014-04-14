@@ -45,9 +45,9 @@
 
         <fragment
             android:id="@+id/cameraFragment"
-            android:name="edu.cmu.sv.arm.CameraFragment"
-            android:layout_width="fill_parent"
-            android:layout_height="200dp"
+            android:name="edu.cmu.sv.arm.RoomInfoFragment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_above="@+id/buttonsLinearLayout"
             android:layout_below="@+id/calendarView"
             android:layout_marginBottom="5dp" />

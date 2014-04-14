@@ -39,6 +39,7 @@ public class AndroidRoomManagerMainActivity extends Activity implements AsyncTas
 	private CalendarView mCalendarView;
 	
 	private CalendarFragment mCalendarFragment;
+	private RoomInfoFragment mRoomInfoFragment;
 	
 	private Handler mApplicationResetHandler;
 	private Runnable mApplicationResetter;
@@ -62,6 +63,7 @@ public class AndroidRoomManagerMainActivity extends Activity implements AsyncTas
         setContentView(R.layout.main);
         
         mCalendarFragment = (CalendarFragment) getFragmentManager().findFragmentById(R.id.calendarFragment);
+		mRoomInfoFragment = (RoomInfoFragment) getFragmentManager().findFragmentById(R.id.cameraFragment);
         
         configureActionBar();
 		
@@ -112,6 +114,7 @@ public class AndroidRoomManagerMainActivity extends Activity implements AsyncTas
 	    	// Intentionally left blank
 	    case R.id.resetButton:
 	    	updateRoomNumber();
+	    	resetRoomInfoFragment(true);
 	    	return true;
 	    default:
 	        return super.onOptionsItemSelected(item);
@@ -142,6 +145,11 @@ public class AndroidRoomManagerMainActivity extends Activity implements AsyncTas
     	//Check!
     	mApplicationResetHandler.postDelayed(mApplicationResetter, PreferenceManager.getDefaultSharedPreferences(
     			this.mController.getApplicationState()).getInt("applicationTimeout", 5) * DateTimeHelpers.MINUTE_IN_MILLISECONDS);
+    }
+    
+    // Resets the camera fragment
+    public void resetRoomInfoFragment(boolean resetRoomInfo) {
+		mRoomInfoFragment.reset(resetRoomInfo);
     }
     
     // Updates the room number application-wide
@@ -231,7 +239,7 @@ public class AndroidRoomManagerMainActivity extends Activity implements AsyncTas
     		// Occurs during room changes (non-preferences)
 			public boolean onNavigationItemSelected(int itemPosition, long itemId) {				
 				mController.getApplicationState().setCurrentRoom(mController.getApplicationState().getNumberAddressedRooms().get(mController.getApplicationState().getRooms().get(itemPosition)));
-				
+				resetRoomInfoFragment(true);
 				restartCalendarFragmentEventsUpdater();
 				
 				return false;

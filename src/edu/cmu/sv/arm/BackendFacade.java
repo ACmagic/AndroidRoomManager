@@ -3,18 +3,29 @@ package edu.cmu.sv.arm;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class BackendFacade {
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import edu.cmu.sv.arm.StartActivityController.ConfigurationStatus;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
+
+public class BackendFacade extends AsyncTask <String, Void, String>{
 	
 	//Read from configuration
 	private String endpoint;
+	private AsyncTaskCompleteListener<String> mTaskCompletedCallback;
 	
-	public BackendFacade(String endpoint){
+	public BackendFacade(String endpoint, AsyncTaskCompleteListener<String> callback){
 		this.endpoint = endpoint;
+		this.mTaskCompletedCallback = callback;
 	}
 	
 	//Check if String as parameter is enough
@@ -26,7 +37,7 @@ public class BackendFacade {
       URL url;
       try {
 	     url = new URL(endpoint);
-	     HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+	     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 	     
 	     //dump all the content
 	     return getResponseContent(connection);
@@ -41,7 +52,7 @@ public class BackendFacade {
       return new String();
 	}
 	
-	private String getResponseContent(HttpsURLConnection connection){
+	private String getResponseContent(HttpURLConnection connection){
 		StringBuffer stringBuffer = new StringBuffer();
 		if(connection!=null){
 			try {			
@@ -59,6 +70,17 @@ public class BackendFacade {
 			   return new String();
 			}
 		}
-		return stringBuffer.toString();
+		return new String(stringBuffer.toString());
+	}
+
+	@Override
+	protected String doInBackground(String... arg0) {
+		return getResourceInfo("");
+	}
+	
+	@Override
+	protected void onPostExecute(String response){
+		super.onPostExecute(response);
+		this.mTaskCompletedCallback.onTaskCompleted(response);
 	}
 }

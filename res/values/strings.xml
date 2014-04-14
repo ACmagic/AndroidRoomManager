@@ -41,6 +41,8 @@
     <string name="camera_image">Camera Image</string>
     <string name="no_cameras">This room has no accessible cameras.</string>
     
+    <string name="room_info_tag">Sensor types.</string>
+    
     <string name="calendar">Calendar</string>
     <string name="jan">Jan</string>
     <string name="feb">Feb</string>

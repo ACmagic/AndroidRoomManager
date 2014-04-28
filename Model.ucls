@@ -62,8 +62,8 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="7" language="java" name="edu.cmu.sv.arm.CameraFragment" project="CMUSV Android Room Manager" 
-    file="/CMUSV Android Room Manager/src/edu/cmu/sv/arm/CameraFragment.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="7" language="java" name="edu.cmu.sv.arm.RoomInfoFragment" project="CMUSV Android Room Manager" 
+    file="/CMUSV Android Room Manager/src/edu/cmu/sv/arm/RoomInfoFragment.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="856" y="-204"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
@@ -71,8 +71,8 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="8" language="java" name="edu.cmu.sv.arm.CameraFragment.CameraBitmapTask" 
-    project="CMUSV Android Room Manager" file="/CMUSV Android Room Manager/src/edu/cmu/sv/arm/CameraFragment.java" 
+  <class id="8" language="java" name="edu.cmu.sv.arm.RoomInfoFragment.CameraBitmapTask" 
+    project="CMUSV Android Room Manager" file="/CMUSV Android Room Manager/src/edu/cmu/sv/arm/RoomInfoFragment.java" 
     binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="1173" y="-214"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 

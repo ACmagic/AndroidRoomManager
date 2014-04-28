@@ -11,5 +11,6 @@
         android:horizontalSpacing="5dp"
         android:stretchMode="columnWidth"
         android:columnWidth="60dp"
-        android:numColumns="3" />
+		android:fadeScrollbars="false"
+        android:numColumns="3"/>
 </RelativeLayout>

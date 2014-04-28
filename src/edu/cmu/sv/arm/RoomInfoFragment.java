@@ -1,9 +1,8 @@
 package edu.cmu.sv.arm;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.lang.Character;
 
 import android.app.Fragment;
 import android.content.Context;
@@ -18,16 +17,26 @@ import android.widget.TextView;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
 
 
 public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListener<String>{
 	private ARM mAppState;
 	private GridView mGridView;
 	private RoomInfoAdapter mRoomInfoAdapter;
+	private Hashtable<String, Integer> sensorIcons = new Hashtable<String, Integer>();
 
+	public RoomInfoFragment(){
+		sensorIcons.put("fireImpXAccelerometer", R.drawable.icon_accelerometer);
+		sensorIcons.put("fireImpYAccelerometer", R.drawable.icon_accelerometer);
+		sensorIcons.put("fireImpZAccelerometer", R.drawable.icon_accelerometer);
+		sensorIcons.put("fireImpMotion", R.drawable.icon_motion);
+		sensorIcons.put("fireImpDigitalTemperature", R.drawable.icon_temperature);
+		sensorIcons.put("fireImpLight", R.drawable.icon_light);
+		sensorIcons.put("fireImpPressure", R.drawable.icon_pressure);
+		sensorIcons.put("fireImpHumidity", R.drawable.icon_humidity);		
+	}
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		mAppState = ((ARM) getActivity().getApplication());
@@ -44,7 +53,6 @@ public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListe
 	@Override
 	public void onResume() {
 		super.onResume();			
-		//mBackend.execute(mAppState.getCurrentRoom().getFullName());
 	}
 	
 	@Override
@@ -55,27 +63,47 @@ public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListe
 	// Used for resetting the camera fragment
 	public void reset(boolean resetRoomInfo) {		
 		if (resetRoomInfo) {
-			//String endpoint = mAppState.getEndpoint() + "room"+ mAppState.getCurrentRoom().getNumber() + "/json";
-			String endpoint = "http://einstein.sv.cmu.edu:9000/latestReadingFromDevicesByGeofence/room"+  mAppState.getCurrentRoom().getNumber() + "/json";
+			String endpoint =  mAppState.getEndpoint() + "latestReadingFromDevicesByGeofence/room"+  mAppState.getCurrentRoom().getNumber() + "/json";
 			BackendFacade backend = new BackendFacade(endpoint, this);
 			backend.execute();
 		}		
 	}
+	
+	//Temp function to get Sensor type until API is ready. 
+	private String getSensorTypeFromSensorName(String sensorName){
+		char[] sensorNameChars = sensorName.toCharArray();
+		for (int i = 0; i < sensorNameChars.length; i++) {
+		    if (Character.isDigit(sensorNameChars[i])) {
+		    	return sensorName.substring(0, i);
+		    }
+		}
+		return sensorName;
+	}
+	
+	private int getIconForSensor(String sensor){
+		int sensorIcon = R.drawable.icon_sensor; //Default value just in case
+		String sensorType = getSensorTypeFromSensorName(sensor);
+		if(this.sensorIcons.containsKey(sensorType)){
+			sensorIcon = this.sensorIcons.get(sensorType);
+		}
+		return sensorIcon;
+	}
 
 	public void onTaskCompleted(String result) {
 		List<Sensor> sensors = new ArrayList<Sensor>();
-		sensors.add(new Sensor(this.mAppState.getCurrentRoom().getNumber(), R.drawable.icon_ok));
 		if (! result.equals("")){
 			JsonParser jsonParser = new JsonParser();
 			JsonArray sensorsInRoom = (JsonArray)jsonParser.parse(result);
 			for (JsonElement sensor: sensorsInRoom ){
-				sensors.add(new Sensor(sensor.getAsJsonObject().get("value").getAsString(), R.drawable.icon_ok));
+				int sensorIcon = getIconForSensor(sensor.getAsJsonObject().get("sensorName").getAsString());
+				sensors.add(new Sensor(sensor.getAsJsonObject().get("value").getAsString(), sensorIcon));
 			}
 		}
 		this.mRoomInfoAdapter.setRoomSensorsInfo(sensors);
 		this.mRoomInfoAdapter.notifyDataSetChanged();
 	}
 	
+		
 	private class RoomInfoAdapter extends BaseAdapter
     {
         private List<Sensor> sensors = new ArrayList<Sensor>();

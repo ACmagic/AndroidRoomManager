@@ -78,11 +78,18 @@ containing a value of this type.
         public static final int calendar_header_day_gradient_shape=0x7f020001;
         public static final int ic_launcher=0x7f020002;
         public static final int icon=0x7f020003;
-        public static final int icon_cancel=0x7f020004;
-        public static final int icon_ok=0x7f020005;
-        public static final int icon_preferences=0x7f020006;
-        public static final int icon_reset=0x7f020007;
-        public static final int icon_today=0x7f020008;
+        public static final int icon_accelerometer=0x7f020004;
+        public static final int icon_cancel=0x7f020005;
+        public static final int icon_humidity=0x7f020006;
+        public static final int icon_light=0x7f020007;
+        public static final int icon_motion=0x7f020008;
+        public static final int icon_ok=0x7f020009;
+        public static final int icon_preferences=0x7f02000a;
+        public static final int icon_pressure=0x7f02000b;
+        public static final int icon_reset=0x7f02000c;
+        public static final int icon_sensor=0x7f02000d;
+        public static final int icon_temperature=0x7f02000e;
+        public static final int icon_today=0x7f02000f;
     }
     public static final class id {
         public static final int addGuestButton=0x7f09004e;

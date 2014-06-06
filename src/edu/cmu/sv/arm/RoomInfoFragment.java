@@ -10,10 +10,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -46,6 +49,13 @@ public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListe
 	    mGridView = (GridView) roomInfoView.findViewById(R.id.gridview);
 	    mRoomInfoAdapter = new RoomInfoAdapter(roomInfoView.getContext());
 	    mGridView.setAdapter(mRoomInfoAdapter);
+	    
+	    mGridView.setOnItemClickListener(new OnItemClickListener() {
+	    	public void onItemClick(AdapterView parent, View v, int position, long id) {
+	    	    Toast.makeText(RoomInfoFragment.this.getActivity(), "" + position,
+	    	             Toast.LENGTH_SHORT).show();
+	    	    }
+	    	});
 
 		return roomInfoView;
 	}

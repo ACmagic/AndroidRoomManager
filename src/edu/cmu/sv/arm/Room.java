@@ -91,6 +91,10 @@ public class Room {
 		
 		return hashCode;
 	}
-
+	
+	 @Override
+	    public String toString() {
+	       return getFullName();
+	    } 
 	
 }

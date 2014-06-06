@@ -123,6 +123,7 @@
     <string name="to">to</string>
     <string name="description_label">Description</string>
     <string name="location_label">Location</string>
+    <string name="sensors_info_label">Room information</string>
     <string name="no_description_hint">No description</string>
     <string name="no_available_rooms">There are no available rooms for the period.</string>
     

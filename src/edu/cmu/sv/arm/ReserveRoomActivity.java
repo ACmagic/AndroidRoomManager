@@ -1,6 +1,7 @@
 package edu.cmu.sv.arm;
 
 import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -27,14 +28,18 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.AdapterView.OnItemSelectedListener;
 
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.util.DateTime;
@@ -57,8 +62,9 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
 	private Button mEndingTimeButton;
 	private EditText mDescriptionEditText;
 	private TextView mNoAvailableRoomsTextView;
-	private RadioGroup mLocationRadioGroup;
+	private Spinner mLocationSpinner;
 	private GuestFragment mGuestFragment;
+	private RoomInfoFragment mRoomInfoFragment; 
 	
 	static final int START_DATE_DIALOG_ID = 0;
 	static final int START_TIME_DIALOG_ID = 1;
@@ -67,7 +73,7 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
 	
 	private String mSelectedRoom;
 	
-	private ArrayList<String> mAvailableRooms;
+	private ArrayList<Room> mAvailableRooms;
 	
 	private AvailableRoomsTask mART;
 	private ReserveRoomController mController;
@@ -92,10 +98,11 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
 		mEndingDateButton = (Button) findViewById(R.id.endingDateButton);
 		mEndingTimeButton = (Button) findViewById(R.id.endingTimeButton);
 		mDescriptionEditText = (EditText) findViewById(R.id.descriptionEditText);
-		mNoAvailableRoomsTextView = (TextView) findViewById(R.id.noAvailableRoomsTextView);
-		mLocationRadioGroup = (RadioGroup) findViewById(R.id.locationRadioGroup);
+		//mNoAvailableRoomsTextView = (TextView) findViewById(R.id.noAvailableRoomsTextView);
+		mLocationSpinner = (Spinner) findViewById(R.id.locationRadioGroup);
 		mGuestFragment = (GuestFragment) getFragmentManager().findFragmentById(R.id.guestFragment);
-		
+		mRoomInfoFragment = (RoomInfoFragment) getFragmentManager().findFragmentById(R.id.roomInfoFragment);
+				
 		setupEditTextFocus();
 		
 		this.mController.setupInitialTime(getIntent().getExtras());
@@ -109,11 +116,13 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
 	public void onResume() {
 		super.onResume();
 		
-		mAvailableRooms = new ArrayList<String>();
+		mAvailableRooms = new ArrayList<Room>();
 		
 		checkForQuickReservation();
 		
 		updateAvailableRooms();
+		
+		mRoomInfoFragment.reset(true);
 	}
 	
 	@Override
@@ -357,11 +366,11 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
 		mART.execute();
     }
 	
-	private class AvailableRoomsTask extends AsyncTask<Void, Void, ArrayList<String>> {
+	private class AvailableRoomsTask extends AsyncTask<Void, Void, ArrayList<Room>> {
 		private ProgressDialog mDialog;
 		
 		@Override
-		protected ArrayList<String> doInBackground(Void... params) {
+		protected ArrayList<Room> doInBackground(Void... params) {
 			if (mController.getApplicationState().getCalendar() == null) {
 				return null;
 			}
@@ -378,7 +387,7 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
 		}
 		
 		@Override
-		protected void onPostExecute(ArrayList<String> result) {
+		protected void onPostExecute(ArrayList<Room> result) {
 			super.onPostExecute(result);
 			
 			if (mDialog.isShowing()) {
@@ -394,42 +403,44 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
         		}
         	}
         	
+        	
+        	
         	ReserveRoomActivity.this.runOnUiThread(new Runnable() {
-				public void run() {	        	
-		        	mLocationRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-						public void onCheckedChanged(RadioGroup group, int checkedId) {
-							mSelectedRoom = mAvailableRooms.get(checkedId);
-						}
+				public void run() {	
+					mLocationSpinner.setAdapter(null);
+
+//		        	if (mAvailableRooms.size() == 0) {
+//		        		mNoAvailableRoomsTextView.setVisibility(android.view.View.VISIBLE);
+//		        	}
+//		        	else {
+//		        		mNoAvailableRoomsTextView.setVisibility(android.view.View.INVISIBLE);
+//		        	
+//		        	}
+
+//		        	// Create an ArrayAdapter using the string array and a default spinner layout
+		        	ArrayAdapter<Room> adapter = new ArrayAdapter<Room>(ReserveRoomActivity.this.getBaseContext(),
+		        		     android.R.layout.simple_spinner_item, mAvailableRooms); 
+		        			
+		        	// Specify the layout to use when the list of choices appears
+		        	adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		        	// Apply the adapter to the spinner
+		        	mLocationSpinner.setAdapter(adapter);
+		        	
+		        	mLocationSpinner.setOnItemSelectedListener(new OnItemSelectedListener(){
+					    
+					    public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+					    	mSelectedRoom = mAvailableRooms.get(position).getFullName();
+					    	mController.getApplicationState().setCurrentRoom( mAvailableRooms.get(position));
+					    	mRoomInfoFragment.reset(true);
+					    }
+
+					    
+					    public void onNothingSelected(AdapterView<?> parentView) {
+					        // your code here
+					    }
+
 					});
-		        	
-		        	mLocationRadioGroup.removeAllViews();
-		        	
-		        	if (mAvailableRooms.size() == 0) {
-		        		mNoAvailableRoomsTextView.setVisibility(android.view.View.VISIBLE);
-		        	}
-		        	else {
-		        		mNoAvailableRoomsTextView.setVisibility(android.view.View.INVISIBLE);
-		        	}
-		        	
-		        	
-		        	LinearLayout.LayoutParams layoutParams = new RadioGroup.LayoutParams(
-		                    LayoutParams.WRAP_CONTENT,
-		                    LayoutParams.WRAP_CONTENT);
-		        	
-		        	for (int i = 0; i < mAvailableRooms.size(); i++) {
-		        		RadioButton rb = new RadioButton(ReserveRoomActivity.this);
-		        		
-		        		rb.setText(mAvailableRooms.get(i));
-		        		rb.setId(i);
-		        		rb.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 18);
-		        		
-		        		if (mAvailableRooms.get(i).equals(mSelectedRoom)) {
-		        			rb.setChecked(true);
-		        		}
-		        		
-		        		mLocationRadioGroup.addView(rb, layoutParams);
-		        	}
-		        	
+					
 		        	selectRoomInReservation();
 				}
 			});
@@ -467,7 +478,7 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
 			}
 			
 			if (radioSelection != -1) {
-				mLocationRadioGroup.check(radioSelection);
+				mLocationSpinner.setSelection(radioSelection);
 			}
 			else {
 				mSelectedRoom = null;

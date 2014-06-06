@@ -243,7 +243,7 @@ public class ReserveRoomController extends AsyncTask <Object, Void, Boolean>{
 		getmEndDateTimeCalendar().set(Calendar.SECOND, 0);
 	}
 	
-	public ArrayList<String> getFreeRooms(){
+	public ArrayList<Room> getFreeRooms(){
 		try {
 			FreeBusyRequest request = new FreeBusyRequest();
 			
@@ -262,13 +262,13 @@ public class ReserveRoomController extends AsyncTask <Object, Void, Boolean>{
 			
 			FreeBusyResponse busyTimes = getApplicationState().getCalendar().freebusy().query(request).execute();
 			
-			ArrayList<String> freeRooms = new ArrayList<String>();
+			ArrayList<Room> freeRooms = new ArrayList<Room>();
 			
 			for (Map.Entry<String, FreeBusyCalendar> busyCalendar : busyTimes.getCalendars().entrySet()) {
 				String room = busyCalendar.getKey();
 				
 				if (busyCalendar.getValue().getBusy().size() == 0) {
-					freeRooms.add(getApplicationState().getResourceAddressedRooms().get(room).getFullName());
+					freeRooms.add(getApplicationState().getResourceAddressedRooms().get(room));
 				}
 			}
 			

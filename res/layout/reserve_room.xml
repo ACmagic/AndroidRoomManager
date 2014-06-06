@@ -5,15 +5,10 @@
     android:orientation="vertical"
     android:keepScreenOn="true" >
 
-    <ScrollView
-        android:id="@+id/reservationScrollView"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:overScrollMode="never" >
-
-        <LinearLayout
+   		<LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:paddingBottom="110dp"
             android:paddingLeft="110dp"
             android:paddingRight="110dp"
@@ -110,33 +105,33 @@
                         </LinearLayout>
 
                         <LinearLayout
-                            android:layout_width="fill_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="5dp" >
-
+                            android:layout_marginTop="5dp" 
+							android:weightSum="2"
+                            android:orientation="horizontal" >
+							 
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="2"
+                                android:layout_weight="1"
                                 android:orientation="vertical" >
 
                                 <LinearLayout
                                     android:layout_width="fill_parent"
-                                    android:layout_height="wrap_content" >
-
+                                    android:layout_height="wrap_content" 
+									android:orientation="horizontal">
                                     <TextView
                                         android:id="@+id/descriptionLabelTextView"
-                                        android:layout_width="0dp"
+                                        android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:layout_weight="1"
                                         android:text="@string/description_label"
                                         android:textSize="18dp" />
 
                                     <EditText
                                         android:id="@+id/descriptionEditText"
-                                        android:layout_width="0dp"
+                                        android:layout_width="fill_parent"
                                         android:layout_height="wrap_content"
-                                        android:layout_weight="3"
                                         android:hint="@string/no_description_hint"
                                         android:inputType="textMultiLine"
                                         android:maxLines="10" />
@@ -144,59 +139,66 @@
 
                                 <LinearLayout
                                     android:layout_width="fill_parent"
-                                    android:layout_height="wrap_content" >
-
+                                    android:layout_height="wrap_content" 
+                                    android:orientation="horizontal" >
+                                    
                                     <TextView
                                         android:id="@+id/locationLabelTextView"
-                                        android:layout_width="0dp"
+                                        android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:layout_marginTop="11dp"
-                                        android:layout_weight="1"
                                         android:text="@string/location_label"
                                         android:textSize="18dp" />
-
-                                    <RelativeLayout
-                                        android:layout_width="0dp"
-                                        android:layout_height="wrap_content"
-                                        android:layout_weight="3"
-                                        android:orientation="vertical" >
-
-                                        <TextView
-                                            android:id="@+id/noAvailableRoomsTextView"
-                                            android:layout_width="fill_parent"
-                                            android:layout_height="wrap_content"
-                                            android:layout_gravity="center_horizontal"
-                                            android:layout_marginTop="11dp"
-                                            android:layout_alignParentTop="true"
-                                            android:text="@string/no_available_rooms"
-                                            android:textSize="18dp" />
-
-                                        <RadioGroup
+                                    
+                                     <Spinner
                                             android:id="@+id/locationRadioGroup"
                                             android:layout_width="fill_parent"
-                                            android:layout_height="wrap_content"
-                                            android:layout_marginTop="4dp"
-                                            android:layout_alignParentTop="true" />
-                                    </RelativeLayout>
-                                </LinearLayout>
-                            </LinearLayout>
-
-                            <View
-                                android:layout_width="0dp"
-                                android:layout_height="fill_parent"
-                                android:layout_weight="0.15" />
-
-                            <fragment
-                                android:id="@+id/guestFragment"
-                                android:name="edu.cmu.sv.arm.GuestFragment"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="2" />
+                                            android:layout_height="wrap_content" />
+                                     
+                                 </LinearLayout>
+                                 <LinearLayout
+                                        android:layout_width="fill_parent"
+                                    	android:layout_height="wrap_content" 
+                                        android:orientation="horizontal" >
+                                        
+                                        <View
+			                                android:layout_width="0dp"
+			                                android:layout_height="fill_parent"
+			                                android:layout_weight="0.15" /> 
+			                            <fragment
+			                                android:id="@+id/guestFragment"
+			                                android:name="edu.cmu.sv.arm.GuestFragment"
+			                                android:layout_width="fill_parent"
+			                                android:layout_height="fill_parent"
+			                                android:layout_weight="2" />
+                                 </LinearLayout>
+                           </LinearLayout> 
+                           
+                           <LinearLayout
+                           		android:layout_width="0dp"
+                           		android:layout_height="wrap_content"
+                           		android:layout_weight="1" 
+								android:orientation="vertical">
+                           		
+                               <TextView
+                                  android:id="@+id/locationLabelTextView"
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:text="@string/sensors_info_label"
+                                  android:textSize="18dp" />
+                               <View
+								  android:layout_width="1dp"
+								  android:layout_height="20dp">
+								</View>
+		                  		<fragment
+		                          android:id="@+id/roomInfoFragment"
+		                          android:name="edu.cmu.sv.arm.RoomInfoFragment"
+		                          android:layout_width="wrap_content"
+		                          android:layout_height="wrap_content"
+		                          android:layout_weight="2" />
+                       		</LinearLayout>                           
                         </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-    </ScrollView>
-
-</LinearLayout>
+    </LinearLayout>

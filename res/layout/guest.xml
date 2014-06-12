@@ -31,7 +31,7 @@
             android:maxLines="1"
             android:singleLine="true" />
     </TableRow>
-
+	
     <TableRow
         android:id="@+id/tableRow2"
         android:layout_width="fill_parent"
@@ -93,13 +93,19 @@
             android:layout_marginTop="11dp"
             android:text="@string/guests_label"
             android:textSize="18dp" />
-
-        <LinearLayout
-            android:id="@+id/guestsLinearLayout"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_span="8"
-            android:orientation="vertical" />
+		<ScrollView 
+		    android:id="@+id/guestsScrollView"
+       		android:layout_width="fill_parent" 
+       		android:layout_height="wrap_content" 
+       		android:fadeScrollbars="false" >
+        	
+        	<LinearLayout
+	            android:id="@+id/guestsLinearLayout"
+	            android:layout_width="fill_parent"
+	            android:layout_height="wrap_content"
+	            android:layout_span="8"
+	            android:orientation="vertical" />
+        </ScrollView>
     </TableRow>
 
 </TableLayout>

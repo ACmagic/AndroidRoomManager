@@ -7,12 +7,12 @@ public class Room {
 	private String mBuilding;
 	private String mNumber;
 	private String mResourceAddress;
-	private ArrayList<RoomImage> mRoomImages;
+	private ArrayList<Device> mDevices;
 	private String mCapacity;
 	
 	public Room() {
 		mIsDefault = false;
-		mRoomImages = new ArrayList<RoomImage>();
+		mDevices = new ArrayList<Device>();
 	}
 	
 	public String getFullName() {
@@ -59,12 +59,12 @@ public class Room {
 		this.mCapacity = capacity;
 	}
 	
-	public ArrayList<RoomImage> getImages() {
-		return mRoomImages;
+	public ArrayList<Device> getDevices() {
+		return mDevices;
 	}
 	
-	public void addImage(RoomImage roomImage) {
-		this.mRoomImages.add(roomImage);
+	public void addDevice(Device device) {
+		this.mDevices.add(device);
 	}
 	
 	@Override

@@ -3,13 +3,9 @@ package edu.cmu.sv.arm;
 import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.Locale;
-import java.util.Map;
-import java.util.TimeZone;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -27,31 +23,15 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.AdapterView.OnItemSelectedListener;
-
-import com.google.api.client.googleapis.json.GoogleJsonResponseException;
-import com.google.api.client.util.DateTime;
-import com.google.api.services.calendar.model.Event;
-import com.google.api.services.calendar.model.EventAttendee;
-import com.google.api.services.calendar.model.EventCreator;
-import com.google.api.services.calendar.model.EventDateTime;
-import com.google.api.services.calendar.model.EventOrganizer;
-import com.google.api.services.calendar.model.FreeBusyCalendar;
-import com.google.api.services.calendar.model.FreeBusyRequest;
-import com.google.api.services.calendar.model.FreeBusyRequestItem;
-import com.google.api.services.calendar.model.FreeBusyResponse;
 
 public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteListener<Boolean> {	
 	private TextView mTitleBarTextView;
@@ -61,7 +41,6 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
 	private Button mEndingDateButton;
 	private Button mEndingTimeButton;
 	private EditText mDescriptionEditText;
-	private TextView mNoAvailableRoomsTextView;
 	private Spinner mLocationSpinner;
 	private GuestFragment mGuestFragment;
 	private RoomInfoFragment mRoomInfoFragment; 

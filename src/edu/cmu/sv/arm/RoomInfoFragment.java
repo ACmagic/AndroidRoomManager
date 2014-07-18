@@ -1,10 +1,17 @@
 package edu.cmu.sv.arm;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.lang.Character;
 
+import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,18 +23,19 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
 
-public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListener<String>{
+public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListener<String[]>{
 	private ARM mAppState;
 	private GridView mGridView;
 	private RoomInfoAdapter mRoomInfoAdapter;
 	private Hashtable<String, Integer> sensorIcons = new Hashtable<String, Integer>();
+	protected ProgressDialog mProgressDialog;
 
 	public RoomInfoFragment(){
 		sensorIcons.put("fireImpXAccelerometer", R.drawable.icon_accelerometer);
@@ -52,12 +60,37 @@ public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListe
 	    
 	    mGridView.setOnItemClickListener(new OnItemClickListener() {
 	    	public void onItemClick(AdapterView parent, View v, int position, long id) {
-	    	    Toast.makeText(RoomInfoFragment.this.getActivity(), "" + position,
-	    	             Toast.LENGTH_SHORT).show();
-	    	    }
+	    		Sensor currentSensor = (Sensor) parent.getItemAtPosition(position);
+	    		mProgressDialog = ProgressDialog.show(getActivity(), "", "Obtaining sensor readings...", true, true);
+	    		String endpoint = buildEndpoint(currentSensor);
+				BackendFacade backend = new BackendFacade(endpoint, RoomInfoFragment.this);
+				backend.execute();
+	    	}
+	    	    
 	    	});
 
 		return roomInfoView;
+	}
+	
+	private String buildEndpoint(Sensor currentSensor) {
+		DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+		Date startDate;
+		Date endDate;
+		try {
+			startDate = dateFormat.parse("01-01-2014");
+			endDate = dateFormat.parse("01-01-2014");
+		} catch (ParseException e) {
+			//Setting to current date and one month interval
+			startDate = new Date();
+			Calendar c = Calendar.getInstance(); 
+			c.setTime(startDate); 
+			c.add(Calendar.MONTH, -3);
+			endDate = c.getTime();
+		}
+		long startDateInEpoch = startDate.getTime()/ 1000L;
+		long endDateInEpoch = endDate.getTime()/ 1000L;
+		String endpoint =  mAppState.getEndpoint() + "getSensorReadingInRange/"+  currentSensor.getName() + "/"+ startDateInEpoch + "/" + endDateInEpoch + "/json";
+		return endpoint;
 	}
 	
 	@Override
@@ -99,18 +132,41 @@ public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListe
 		return sensorIcon;
 	}
 
-	public void onTaskCompleted(String result) {
+	public void onTaskCompleted(String[] result) {
 		List<Sensor> sensors = new ArrayList<Sensor>();
-		if (! result.equals("")){
-			JsonParser jsonParser = new JsonParser();
-			JsonArray sensorsInRoom = (JsonArray)jsonParser.parse(result);
-			for (JsonElement sensor: sensorsInRoom ){
-				int sensorIcon = getIconForSensor(sensor.getAsJsonObject().get("sensorName").getAsString());
-				sensors.add(new Sensor(sensor.getAsJsonObject().get("value").getAsString(), sensorIcon));
+		List<SensorReading> readings = new ArrayList<SensorReading>();
+		JsonParser jsonParser = new JsonParser();
+		if (! result[1].equals("")){
+			JsonElement parsedResult = jsonParser.parse(result[1]);
+			if(parsedResult !=null){
+				JsonArray sensorsData = (JsonArray)parsedResult;
+				for (JsonElement sensor: sensorsData ){
+					String value = sensor.getAsJsonObject().get("value").getAsString();
+					String timeStamp = sensor.getAsJsonObject().get("timeStamp").getAsString();
+					SensorReading reading = new SensorReading(timeStamp, value);
+					readings.add(reading);
+					
+					String name = sensor.getAsJsonObject().get("sensorName").getAsString();
+					int icon = getIconForSensor(sensor.getAsJsonObject().get("sensorName").getAsString());					
+					sensors.add(new Sensor(name, icon, value));
+				}
+				if(result[0].contains("latestReadingFromDevicesByGeofence")){
+					this.mRoomInfoAdapter.setRoomSensorsInfo(sensors);
+					this.mRoomInfoAdapter.notifyDataSetChanged();
+				}
+				else if(result[0].contains("getSensorReadingInRange")){
+					DialogFragment dialog = new SensorsGraphicsDialog();
+					String readingsAsJson = new Gson().toJson(readings);
+					Bundle args = new Bundle();
+					args.putString("Readings", readingsAsJson);
+					if(this.mProgressDialog !=null){
+						this.mProgressDialog.dismiss();
+					}
+					dialog.setArguments(args);
+					dialog.show(getFragmentManager(), "SensorsGraphicsDialog");
+				}
 			}
 		}
-		this.mRoomInfoAdapter.setRoomSensorsInfo(sensors);
-		this.mRoomInfoAdapter.notifyDataSetChanged();
 	}
 	
 		
@@ -143,14 +199,14 @@ public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListe
 
         public long getItemId(int i)
         {
-            return sensors.get(i).drawableId;
+            return sensors.get(i).getDrawableId();
         }
 
         public View getView(int i, View view, ViewGroup viewGroup)
         {
             View sensorsView = view;
             ImageView sensorImage;
-            TextView sensorName;
+            TextView sensorValue;
 
             if(sensorsView == null)
             {
@@ -160,26 +216,14 @@ public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListe
             }
 
             sensorImage = (ImageView)sensorsView.getTag(R.id.picture);
-            sensorName = (TextView)sensorsView.getTag(R.id.text);
+            sensorValue = (TextView)sensorsView.getTag(R.id.text);
 
             Sensor item = (Sensor)getItem(i);
 
-            sensorImage.setImageResource(item.drawableId);
-            sensorName.setText(item.name);
+            sensorImage.setImageResource(item.getDrawableId());
+            sensorValue.setText(item.getValue());
 
             return sensorsView;
         }
     }
-	
-	private class Sensor
-	{
-	    final String name;
-	    final int drawableId;
-	
-	    public Sensor(String name, int drawableId)
-	    {
-	        this.name = name;
-	        this.drawableId = drawableId;
-	    }
-	}
 }

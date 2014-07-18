@@ -27,7 +27,7 @@ public class ARM extends Application {
 	
 	private Hashtable<String, Room> mNumberAddressedRooms = new Hashtable<String, Room>();
 	private Hashtable<String, Room> mResourceAddressedRooms = new Hashtable<String, Room>();
-	private ArrayList<String> mRooms = new ArrayList<String>();
+	private ArrayList<Room> mRooms = new ArrayList<Room>();
 	
 	private Room mDefaultRoom = null;
 	
@@ -137,14 +137,14 @@ public class ARM extends Application {
 		mNumberAddressedRooms.put(room.getFullName(), room);
 		mResourceAddressedRooms.put(room.getResourceAddress(), room);
 		
-		int index = Collections.binarySearch(mRooms, room.getFullName());
+		int index = Collections.binarySearch(mRooms, room);
 		
 		if (index < 0) {
-			mRooms.add(-index - 1, room.getFullName());
+			mRooms.add(-index - 1, room);
 		}
 	}
 	
-	public ArrayList<String> getRooms() {
+	public ArrayList<Room> getRooms() {
 		return mRooms;
 	}
 	

@@ -2,14 +2,9 @@ package edu.cmu.sv.arm;
 
 import java.util.Vector;
 
-import android.app.Application;
 import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.provider.BaseColumns;
-import android.provider.ContactsContract;
+
 
 public class AndroidRoomManagerMainController extends AsyncTask <Void, Void, Void> implements AsyncTaskCompleteListener {
 	private ARM mAppState;

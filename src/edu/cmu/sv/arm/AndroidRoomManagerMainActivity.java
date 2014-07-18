@@ -1,5 +1,6 @@
 	package edu.cmu.sv.arm;
 
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.Vector;
 
@@ -8,15 +9,10 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.graphics.Typeface;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.provider.BaseColumns;
-import android.provider.ContactsContract;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
@@ -195,7 +191,7 @@ public class AndroidRoomManagerMainActivity extends Activity implements AsyncTas
             	Intent reserveRoomActivity = new Intent(getBaseContext(), ReserveRoomActivity.class);
             	reserveRoomActivity.putExtra("quickReservation", true);
             	
-            	reserveRoomActivity.putExtra("selectedRoom", mController.getApplicationState().getRooms().get(mActionBar.getSelectedNavigationIndex()));
+            	reserveRoomActivity.putExtra("selectedRoom", mController.getApplicationState().getRooms().get(mActionBar.getSelectedNavigationIndex()).getFullName());
         		startActivity(reserveRoomActivity);
             }
         });
@@ -230,7 +226,12 @@ public class AndroidRoomManagerMainActivity extends Activity implements AsyncTas
     	mActionBar.setDisplayShowCustomEnabled(true);
     	mActionBar.setCustomView(mActionBarTextView);
     	
-    	ArrayAdapter<CharSequence> aa = new ArrayAdapter<CharSequence>(this, R.layout.spinner_selector_text_view, mController.getApplicationState().getRooms().toArray(new CharSequence[mController.getApplicationState().getRooms().size()]));//ArrayAdapter.createFromResource(this, R.array.rooms, R.layout.spinner_selector_text_view);
+    	ArrayList<String> roomNames = new ArrayList<String>();
+    	for(Room room: mController.getApplicationState().getRooms()){
+    		roomNames.add(room.getFullName());
+    	}
+    	
+    	ArrayAdapter<CharSequence> aa = new ArrayAdapter<CharSequence>(this, R.layout.spinner_selector_text_view, roomNames.toArray(new CharSequence[roomNames.size()]));//ArrayAdapter.createFromResource(this, R.array.rooms, R.layout.spinner_selector_text_view);
     	aa.setDropDownViewResource(R.layout.spinner_dropdown_text_view);
     	
     	SpinnerAdapter spinnerAdapter = aa;
@@ -238,7 +239,7 @@ public class AndroidRoomManagerMainActivity extends Activity implements AsyncTas
     	ActionBar.OnNavigationListener navigationCallback = new ActionBar.OnNavigationListener() {
     		// Occurs during room changes (non-preferences)
 			public boolean onNavigationItemSelected(int itemPosition, long itemId) {				
-				mController.getApplicationState().setCurrentRoom(mController.getApplicationState().getNumberAddressedRooms().get(mController.getApplicationState().getRooms().get(itemPosition)));
+				mController.getApplicationState().setCurrentRoom(mController.getApplicationState().getNumberAddressedRooms().get(mController.getApplicationState().getRooms().get(itemPosition).getFullName()));
 				resetRoomInfoFragment(true);
 				restartCalendarFragmentEventsUpdater();
 				

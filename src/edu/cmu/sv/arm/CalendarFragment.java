@@ -383,7 +383,7 @@ public class CalendarFragment extends Fragment {
 		Intent reserveRoomActivity = new Intent(getActivity().getBaseContext(), ReserveRoomActivity.class);
     	reserveRoomActivity.putExtra("quickReservation", false);
     	reserveRoomActivity.putExtra("eventTime", eventTime);
-    	reserveRoomActivity.putExtra("selectedRoom", mAppState.getRooms().get(mAppState.getMainActivity().getActionBar().getSelectedNavigationIndex()));
+    	reserveRoomActivity.putExtra("selectedRoom", mAppState.getRooms().get(mAppState.getMainActivity().getActionBar().getSelectedNavigationIndex()).getFullName());
 		startActivity(reserveRoomActivity);
 	}
 	

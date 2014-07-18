@@ -254,7 +254,7 @@ public class ReserveRoomController extends AsyncTask <Object, Void, Boolean>{
 			
 			ArrayList<FreeBusyRequestItem> fbri_list = new ArrayList<FreeBusyRequestItem>();
 			
-			for(String room : getApplicationState().getRooms()) {
+			for(Room room : getApplicationState().getRooms()) {
 				fbri_list.add(new FreeBusyRequestItem().setId(getApplicationState().getNumberAddressedRooms().get(room).getResourceAddress()));
 			}
 			

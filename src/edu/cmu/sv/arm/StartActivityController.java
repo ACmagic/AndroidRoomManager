@@ -2,18 +2,10 @@ package edu.cmu.sv.arm;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
-
 import android.app.Application;
-import android.media.MediaScannerConnection;
-import android.media.MediaScannerConnection.OnScanCompletedListener;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import edu.cmu.sv.arm.StartActivityController.ConfigurationStatus;
@@ -21,7 +13,6 @@ import edu.cmu.sv.arm.StartActivityController.ConfigurationStatus;
 public class StartActivityController extends AsyncTask <Void, Void, ConfigurationStatus>{
 	private ARM mAppState;
 	// Pass files from view instead
-	private Application mApplication; 
 	private AsyncTaskCompleteListener<ConfigurationStatus> mTaskCompletedCallback;
 	
 	public enum ConfigurationStatus {USING_CUSTOM_SETTINGS_FILE, USING_DEFAULT_SETTINGS_FILE,
@@ -29,7 +20,6 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 
 	public StartActivityController(Application app, AsyncTaskCompleteListener<ConfigurationStatus> callback)
 	{
-		this.mApplication = app;
 		this.mAppState = (ARM) app;
 		this.mTaskCompletedCallback = callback;
 	}
@@ -72,7 +62,7 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 			return ConfigurationStatus.UNEXPECTED_ERROR;
 		}
 	}
-	
+
 	public File getConfigurationFile(){
 		String filePath = Environment.getExternalStorageDirectory() + "/" + "ARM";
 		File settingsFile = new File(filePath, "arm_settings.xml");
@@ -117,6 +107,7 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 						}
 						else if (tagName.equals("room")) {
 							parseRoomInfo(currentRoom, attrName, attrValue);
+							currentRoom.setFullName();
 						}
 					}
 					break;
@@ -223,7 +214,7 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 	public ARM getAppState() {
 		return mAppState;
 	}
-	
+
 }
 
 

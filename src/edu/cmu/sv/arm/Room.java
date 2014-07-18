@@ -2,21 +2,25 @@ package edu.cmu.sv.arm;
 
 import java.util.ArrayList;
 
-public class Room {
+public class Room implements Comparable<Room>{
 	private boolean mIsDefault;
 	private String mBuilding;
 	private String mNumber;
 	private String mResourceAddress;
 	private ArrayList<Device> mDevices;
 	private String mCapacity;
+	private String mFullName;
 	
 	public Room() {
 		mIsDefault = false;
 		mDevices = new ArrayList<Device>();
 	}
 	
+	public void setFullName(){
+		mFullName =  "Building " + mBuilding + ", Room " + mNumber;
+	}
 	public String getFullName() {
-		return "Building " + mBuilding + ", Room " + mNumber;
+		return mFullName;
 	}
 	
 	public boolean isDefault() {
@@ -95,6 +99,10 @@ public class Room {
 	 @Override
 	    public String toString() {
 	       return getFullName();
-	    } 
+	    }
+
+	public int compareTo(Room another) {
+		return this.getNumber().compareTo(another.getNumber());
+	} 
 	
 }

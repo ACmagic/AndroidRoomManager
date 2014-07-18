@@ -7,23 +7,14 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.net.ssl.HttpsURLConnection;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-import edu.cmu.sv.arm.StartActivityController.ConfigurationStatus;
-import android.graphics.Bitmap;
 import android.os.AsyncTask;
 
 public class BackendFacade extends AsyncTask <String, Void, String>{
 	
-	//Read from configuration
 	private String endpoint;
-	private AsyncTaskCompleteListener<String> mTaskCompletedCallback;
+	private AsyncTaskCompleteListener<String[]> mTaskCompletedCallback;
 	
-	public BackendFacade(String endpoint, AsyncTaskCompleteListener<String> callback){
+	public BackendFacade(String endpoint, AsyncTaskCompleteListener<String[]> callback){
 		this.endpoint = endpoint;
 		this.mTaskCompletedCallback = callback;
 	}
@@ -81,6 +72,9 @@ public class BackendFacade extends AsyncTask <String, Void, String>{
 	@Override
 	protected void onPostExecute(String response){
 		super.onPostExecute(response);
-		this.mTaskCompletedCallback.onTaskCompleted(response);
+		String[] responseInfo = new String[2];
+		responseInfo[0] = endpoint;
+		responseInfo[1] = response;
+		this.mTaskCompletedCallback.onTaskCompleted(responseInfo);
 	}
 }

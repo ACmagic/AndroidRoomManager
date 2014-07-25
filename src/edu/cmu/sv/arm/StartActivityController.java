@@ -119,8 +119,6 @@ public class StartActivityController extends AsyncTask <Void, Void, Configuratio
 						if (currentRoom.isDefault()) {
 							getAppState().setDefaultRoom(currentRoom);
 						}
-						
-						//addLineToStatus("Parsed " + currentRoom.getFullName() + ".");
 					}
 					break;
 				default:

@@ -18,30 +18,21 @@ import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.app.Activity;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.content.SharedPreferences;
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.accounts.AccountManagerCallback;
-import android.accounts.AccountManagerFuture;
 
 public class CalendarProvider extends AsyncTask <Void, Void, Void>{
 	
 	private Handler mGoogleAuthTokenUpdateHandler;
 	private Runnable mGoogleAuthTokenUpdater;
-	private AsyncTaskCompleteListener<Void> mTaskCompletedCallback = null;
 	private Activity mActivity = null;
 	private String mAccountName;
 	private ARM mAppState;
 	private CalendarServiceRegistrationTask mCSRT;
 	private String mAppName;
 	
-	public CalendarProvider(Activity activity, AsyncTaskCompleteListener<Void> callback,
-			 ARM appState, String appName){
-		this.mTaskCompletedCallback = callback;
+	public CalendarProvider(Activity activity, ARM appState, String appName){
 		this.mActivity = activity;
 		this.mAppState = appState;
 		this.mAccountName = this.mAppState.getGoogleAccountName();
@@ -57,15 +48,12 @@ public class CalendarProvider extends AsyncTask <Void, Void, Void>{
 	// Configures the background tasks
     public void configureRunnable() {
     	mGoogleAuthTokenUpdateHandler = new Handler();
-		
         mGoogleAuthTokenUpdater = new Runnable() {
 			public void run() {    	 
 				obtainGoogleAuthToken();
-		    	 
 				mGoogleAuthTokenUpdateHandler.postDelayed(mGoogleAuthTokenUpdater, DateTimeHelpers.getMillisecondsUntilNextMinute() + DateTimeHelpers.MINUTE_IN_MILLISECONDS * 30);
 			}
 		};
-		
 		startGoogleAuthTokenUpdater();
     }
     
@@ -99,41 +87,30 @@ public class CalendarProvider extends AsyncTask <Void, Void, Void>{
 	    if (roomManagerAccount == null) {
 	    	// TODO What if appropriate account does not exist?
 	    }
-	    
 	    String authTokenType = "oauth2:https://www.googleapis.com/auth/calendar";
-	    
-	    
 	    if (roomManagerAccount != null) {
 		    accountManager.getAuthToken(roomManagerAccount, authTokenType, null, this.mActivity, new AccountManagerCallback<Bundle>() {
 				public void run(AccountManagerFuture<Bundle> future) {
 		    		try {
 		    			// Grab an auth token
 		    			String authToken = future.getResult().getString(AccountManager.KEY_AUTHTOKEN);
-		    			
 		    			if (authToken == null) {
 		    				// TODO Need to throw an exception
 		    			}
 		    			else {
 		    				mAppState.setAuthToken(authToken);
-		    				
 		    				if (mCSRT != null) {
 		    					mCSRT.cancel(true);
 		    					mCSRT = null;
 		    				}
-		    				
 		    				mCSRT = new CalendarServiceRegistrationTask();
 		    				mCSRT.execute(authToken, mAppName);
 		    			}
 		    		} catch (Exception e) {
-//		    			AndroidRoomManagerMainActivity.this.runOnUiThread(new Runnable() {
-//							public void run() {
-//					        	// TODO What if cannot obtain auth token??
-//					        }
-//					    });
-		    		}
+		    			// TODO What if cannot obtain auth token??
+					}
 		        }
 		    }, null);
-	    
 	    }
     }
     
@@ -146,30 +123,21 @@ public class CalendarProvider extends AsyncTask <Void, Void, Void>{
 		protected Calendar doInBackground(String... args) {
     		try {
     			AccessProtectedResource accessProtectedResource = new GoogleAccessProtectedResource(args[0]);
- 	    	   	
 		    	HttpTransport transport = AndroidHttp.newCompatibleTransport();
-		    	
 		    	Calendar service = Calendar.builder(transport, new JacksonFactory())
-//		    			.setApplicationName(getString(R.string.app_name_extended))
 		    			.setApplicationName(args[1])
 		    			.setHttpRequestInitializer(accessProtectedResource)
 		    			.setJsonHttpRequestInitializer(new JsonHttpRequestInitializer() {
 							public void initialize(JsonHttpRequest request) {
-		    			        CalendarRequest calRequest = (CalendarRequest) request;
-		    					
-		    			        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mAppState);
-		    			        
-		    					String apiKey = mAppState.getGoogleCalendarAPIKey();//prefs.getString("googleCalendarAPIKey", "AIzaSyD8q4DB7NPcxBCEstCOowsazOZtQ5uzty8");
-		    			        
+		    			        CalendarRequest calRequest = (CalendarRequest) request;		    			        
+		    					String apiKey = mAppState.getGoogleCalendarAPIKey();
 		    			        calRequest.setKey(apiKey);
 		    			    }
-
 		    			}).build();
-		    	
 		    	return service;
     		}
     		catch (Exception e) {
-    			// TODO Perhaps may need to handle the exception
+    			// TODO 
     			return null;
     		}
     	}
@@ -182,9 +150,7 @@ public class CalendarProvider extends AsyncTask <Void, Void, Void>{
 	    		// TODO Handle error
     		}
     		else {
-    			 	
-    			// Do in controller
-    			mAppState.setCalendar(result);
+       			mAppState.setCalendar(result);
     		}
     	}
     }
@@ -196,5 +162,4 @@ public class CalendarProvider extends AsyncTask <Void, Void, Void>{
 		}
     	stopGoogleAuthTokenUpdater();
     }
-
 }

@@ -15,7 +15,7 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.view.View;
 
-
+//http://www.ankitsrivastava.net/2012/03/a-simple-2d-plot-class-for-android/
 public class SensorsGraphicsDialog extends DialogFragment {
 	private ArrayList<SensorReading> mReadings;
   
@@ -70,8 +70,6 @@ class ChartView extends View {
 		int[] yvaluesInPixels = toPixel(canvasHeight, miny, maxy, yvalues);
 		int locxAxisInPixels = toPixelInt(canvasHeight, miny, maxy, locxAxis);
 		int locyAxisInPixels = toPixelInt(canvasWidth, minx, maxx, locyAxis);
-		String xAxis = "x-axis";
-		String yAxis = "y-axis";
 
 		paint.setStrokeWidth(2);
 		canvas.drawARGB(255, 255, 255, 255);

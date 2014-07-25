@@ -76,7 +76,7 @@ public class StartActivity extends Activity implements AsyncTaskCompleteListener
 		else
 		{
 			// Should we close the app if no configuration is there?
-			displayMessageInStatusView("There has been an unexpected error. The application will close... "); //exception msg?
+			displayMessageInStatusView("There has been an unexpected error. The application will close... "); 
 			mStartButton.setEnabled(false);    			
 		}
 		

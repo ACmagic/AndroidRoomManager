@@ -73,7 +73,6 @@ public class ReserveRoomController extends AsyncTask <Object, Void, Boolean>{
 			}
 	    	   	
 			mEvent = new Event();
-			
 			mEvent.setSummary((String)params[0]);
 			Date startDate = new Date(getmStartDateTimeCalendar().getTimeInMillis());
 			Date endDate = new Date(getmEndDateTimeCalendar().getTimeInMillis());
@@ -249,9 +248,7 @@ public class ReserveRoomController extends AsyncTask <Object, Void, Boolean>{
 			
 			request.setTimeMin(new DateTime(new Date(getmStartDateTimeCalendar().getTimeInMillis()), TimeZone.getTimeZone("UTC")));
 			request.setTimeMax(new DateTime(new Date(getmEndDateTimeCalendar().getTimeInMillis()), TimeZone.getTimeZone("UTC")));
-			
-			//SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mAppState);
-			
+						
 			ArrayList<FreeBusyRequestItem> fbri_list = new ArrayList<FreeBusyRequestItem>();
 			
 			for(Room room : getApplicationState().getRooms()) {

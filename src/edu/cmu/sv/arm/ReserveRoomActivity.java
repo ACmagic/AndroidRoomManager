@@ -67,9 +67,6 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
 		
 		setTitle(this.mController.getApplicationState().getTitle() + " - " + getString(R.string.reserve_room_label));
 		
-		// Suppresses keyboard when activity starts
-		//getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-		
 		mTitleBarTextView = (TextView) findViewById(R.id.titleBarTextView);
 		mTitleEditText = (EditText) findViewById(R.id.titleEditText);
 		mStartingDateButton = (Button) findViewById(R.id.startingDateButton);
@@ -77,7 +74,6 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
 		mEndingDateButton = (Button) findViewById(R.id.endingDateButton);
 		mEndingTimeButton = (Button) findViewById(R.id.endingTimeButton);
 		mDescriptionEditText = (EditText) findViewById(R.id.descriptionEditText);
-		//mNoAvailableRoomsTextView = (TextView) findViewById(R.id.noAvailableRoomsTextView);
 		mLocationSpinner = (Spinner) findViewById(R.id.locationRadioGroup);
 		mGuestFragment = (GuestFragment) getFragmentManager().findFragmentById(R.id.guestFragment);
 		mRoomInfoFragment = (RoomInfoFragment) getFragmentManager().findFragmentById(R.id.roomInfoFragment);
@@ -94,13 +90,9 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
 	@Override
 	public void onResume() {
 		super.onResume();
-		
 		mAvailableRooms = new ArrayList<Room>();
-		
 		checkForQuickReservation();
-		
 		updateAvailableRooms();
-		
 		mRoomInfoFragment.reset(true);
 	}
 	
@@ -382,21 +374,11 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
         		}
         	}
         	
-        	
-        	
         	ReserveRoomActivity.this.runOnUiThread(new Runnable() {
 				public void run() {	
 					mLocationSpinner.setAdapter(null);
 
-//		        	if (mAvailableRooms.size() == 0) {
-//		        		mNoAvailableRoomsTextView.setVisibility(android.view.View.VISIBLE);
-//		        	}
-//		        	else {
-//		        		mNoAvailableRoomsTextView.setVisibility(android.view.View.INVISIBLE);
-//		        	
-//		        	}
-
-//		        	// Create an ArrayAdapter using the string array and a default spinner layout
+		        	// Create an ArrayAdapter using the string array and a default spinner layout
 		        	ArrayAdapter<Room> adapter = new ArrayAdapter<Room>(ReserveRoomActivity.this.getBaseContext(),
 		        		     android.R.layout.simple_spinner_item, mAvailableRooms); 
 		        			
@@ -413,11 +395,7 @@ public class ReserveRoomActivity extends Activity implements AsyncTaskCompleteLi
 					    	mRoomInfoFragment.reset(true);
 					    }
 
-					    
-					    public void onNothingSelected(AdapterView<?> parentView) {
-					        // your code here
-					    }
-
+					    public void onNothingSelected(AdapterView<?> parentView) {}
 					});
 					
 		        	selectRoomInReservation();

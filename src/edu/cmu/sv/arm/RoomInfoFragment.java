@@ -29,7 +29,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
-
 public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListener<String[]>{
 	private ARM mAppState;
 	private GridView mGridView;
@@ -38,6 +37,7 @@ public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListe
 	protected ProgressDialog mProgressDialog;
 
 	public RoomInfoFragment(){
+		// Map sensor icons to sensor names to be displayed in the fragment
 		sensorIcons.put("fireImpXAccelerometer", R.drawable.icon_accelerometer);
 		sensorIcons.put("fireImpYAccelerometer", R.drawable.icon_accelerometer);
 		sensorIcons.put("fireImpZAccelerometer", R.drawable.icon_accelerometer);
@@ -58,12 +58,15 @@ public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListe
 	    mRoomInfoAdapter = new RoomInfoAdapter(roomInfoView.getContext());
 	    mGridView.setAdapter(mRoomInfoAdapter);
 	    
+	    // Whenever a sensor image is clicked, it will trigger a request to the backend to display the readings
+	    // of that sensor in the specified time range
 	    mGridView.setOnItemClickListener(new OnItemClickListener() {
 	    	public void onItemClick(AdapterView parent, View v, int position, long id) {
 	    		Sensor currentSensor = (Sensor) parent.getItemAtPosition(position);
 	    		mProgressDialog = ProgressDialog.show(getActivity(), "", "Obtaining sensor readings...", true, true);
 	    		String endpoint = buildEndpoint(currentSensor);
 				BackendFacade backend = new BackendFacade(endpoint, RoomInfoFragment.this);
+				// Executing the API call asynchronously
 				backend.execute();
 	    	}
 	    	    
@@ -72,6 +75,7 @@ public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListe
 		return roomInfoView;
 	}
 	
+	// Helper method to build the proper URL. This method should receive the user input on the time range
 	private String buildEndpoint(Sensor currentSensor) {
 		DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 		Date startDate;
@@ -103,7 +107,7 @@ public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListe
 		super.onPause();
 	}
 	
-	// Used for resetting the camera fragment
+	// Used for resetting the room info fragment. It retrieves the latest sensor readings for the room
 	public void reset(boolean resetRoomInfo) {		
 		if (resetRoomInfo) {
 			String endpoint =  mAppState.getEndpoint() + "latestReadingFromDevicesByGeofence/room"+  mAppState.getCurrentRoom().getNumber() + "/json";
@@ -131,7 +135,8 @@ public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListe
 		}
 		return sensorIcon;
 	}
-
+	
+	// Parse the latest readings of the sensors for the requested room
 	public void onTaskCompleted(String[] result) {
 		List<Sensor> sensors = new ArrayList<Sensor>();
 		List<SensorReading> readings = new ArrayList<SensorReading>();
@@ -150,23 +155,33 @@ public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListe
 					int icon = getIconForSensor(sensor.getAsJsonObject().get("sensorName").getAsString());					
 					sensors.add(new Sensor(name, icon, value));
 				}
+				// Parse request URL to determine the action to perform accordingly
 				if(result[0].contains("latestReadingFromDevicesByGeofence")){
-					this.mRoomInfoAdapter.setRoomSensorsInfo(sensors);
-					this.mRoomInfoAdapter.notifyDataSetChanged();
+					setSensorsInfoInRoom(sensors);
 				}
 				else if(result[0].contains("getSensorReadingInRange")){
-					DialogFragment dialog = new SensorsGraphicsDialog();
-					String readingsAsJson = new Gson().toJson(readings);
-					Bundle args = new Bundle();
-					args.putString("Readings", readingsAsJson);
-					if(this.mProgressDialog !=null){
-						this.mProgressDialog.dismiss();
-					}
-					dialog.setArguments(args);
-					dialog.show(getFragmentManager(), "SensorsGraphicsDialog");
+					showSensorReadings(readings);
 				}
 			}
 		}
+	}
+	
+	// Open dialog to display sensor readings
+	private void showSensorReadings(List<SensorReading> readings) {
+		DialogFragment dialog = new SensorsGraphicsDialog();
+		String readingsAsJson = new Gson().toJson(readings);
+		Bundle args = new Bundle();
+		args.putString("Readings", readingsAsJson);
+		if(this.mProgressDialog !=null){
+			this.mProgressDialog.dismiss();
+		}
+		dialog.setArguments(args);
+		dialog.show(getFragmentManager(), "SensorsGraphicsDialog");
+	}
+
+	private void setSensorsInfoInRoom(List<Sensor> sensors) {
+		this.mRoomInfoAdapter.setRoomSensorsInfo(sensors);
+		this.mRoomInfoAdapter.notifyDataSetChanged();
 	}
 	
 		
@@ -182,10 +197,6 @@ public class RoomInfoFragment extends Fragment implements AsyncTaskCompleteListe
         
         public void setRoomSensorsInfo(List<Sensor> sensors){
         	this.sensors = sensors;
-        }
-        
-        public void clearSensorInfo(){
-        	this.sensors.clear();
         }
 
         public int getCount() {
